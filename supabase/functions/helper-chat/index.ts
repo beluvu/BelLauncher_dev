@@ -4,7 +4,9 @@
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SB_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const OPENAI_KEY = Deno.env.get('OPENAI_API_KEY') || '';
-const MODEL = 'gpt-6-luna';
+// Адрес и модель берутся из секретов, чтобы можно было подключить OpenAI или совместимый сервис (например unorouter).
+const BASE_URL = (Deno.env.get('OPENAI_BASE_URL') || 'https://api.openai.com/v1').replace(/\/+$/, '');
+const MODEL = Deno.env.get('OPENAI_MODEL') || 'gpt-6-luna';
 const MAX_IN = 1000;
 const HISTORY = 12;
 
@@ -35,7 +37,7 @@ async function rpc(fn: string, args: Record<string, unknown>) {
 }
 
 async function ask(messages: { role: string; content: string }[]): Promise<string> {
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+  const r = await fetch(`${BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
     body: JSON.stringify({ model: MODEL, messages, max_completion_tokens: 900 }),
