@@ -187,6 +187,10 @@ class Api:
             return {'ok': False, 'error': str(e)}
         if self._window is not None:
             self._window.destroy()
+        # Батник ждёт выхода этого процесса: выходим сами, даже если остались фоновые потоки
+        import os
+        import threading
+        threading.Timer(1.5, os._exit, args=(0,)).start()
         return {'ok': True}
 
     def social_appearance_set(self, a=None):
