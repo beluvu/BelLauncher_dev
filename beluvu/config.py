@@ -3,7 +3,7 @@
 SOCIAL_ENABLED = True
 
 # Версия лаунчера. Выпуск новой версии: поднять здесь и опубликовать в админке (Обновления).
-APP_VERSION = '1.1.0'
+APP_VERSION = '1.1.1'
 
 SUPABASE_URL = 'https://clugtadhkstnwijqythc.supabase.co'
 SUPABASE_KEY = 'sb_publishable_55gqsHpmMbNY7zAkvX-duw_xQQ3Ps1C'
