@@ -1,0 +1,10 @@
+__pycache__/
+build/*.spec
+dist/
+*.part
+out/
+.pytest_cache/
+dist/
+__pycache__/
+*.secret.json
+install.id
