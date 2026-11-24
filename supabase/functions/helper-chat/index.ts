@@ -75,7 +75,8 @@ Deno.serve(async (req) => {
     await rpc('helper_store', { p_key: key, p_role: 'assistant', p_body: reply });
     return json({ ok: true, reply, state });
   } catch (e) {
-    console.error('helper-chat failed', (e as Error).message);
-    return json({ ok: false, error: 'Сейчас не получилось ответить. Попробуй чуть позже.' }, 502);
+    const detail = (e as Error).message;
+    console.error('helper-chat failed', detail);
+    return json({ ok: false, error: 'Помогатор не ответил. ' + detail.slice(0, 300) }, 502);
   }
 });
