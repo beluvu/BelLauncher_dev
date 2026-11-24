@@ -44,7 +44,14 @@ async function ask(messages: { role: string; content: string }[]): Promise<strin
   });
   if (!r.ok) throw new Error(`openai ${r.status}: ${(await r.text()).slice(0, 300)}`);
   const j = await r.json();
-  return String(j.choices?.[0]?.message?.content || '').trim();
+  const choice = j.choices?.[0] || {};
+  const m = choice.message || {};
+  // некоторые модели с рассуждениями кладут текст не в content
+  const text = String(m.content || m.reasoning_content || '').trim();
+  if (!text) {
+    throw new Error(`пустой ответ модели: finish=${choice.finish_reason}, поля=${Object.keys(m).join(',')}, usage=${JSON.stringify(j.usage || {})}`);
+  }
+  return text;
 }
 
 Deno.serve(async (req) => {
