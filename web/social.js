@@ -133,12 +133,10 @@ function helperMsgHtml(m) {
   return `<div class="msg"><div class="who">Помогатор</div><div class="txt">${esc(m.body)}${pack}</div></div>`;
 }
 function paintHelper(body) {
-  const st = FR.helperState;
-  const info = st ? `Осталось сегодня: <b>${st.left}</b> из ${st.limit}${st.extra ? ` · докупленные: ${st.extra}` : ''}` : 'Загружаю…';
-  const buyLabel = st ? `+${st.pack} за ${Number(st.price).toLocaleString('ru-RU')} кр.` : '+100 запросов';
-  body.innerHTML = `<div class="chat-head"><b>Помогатор</b><span class="muted helper-info">${info}</span><span style="flex:1"></span>
-      <button class="btn small" type="button" data-act="fr-helper-buy">${buyLabel}</button></div>
-    <div class="msgs" id="msgs">${FR.helper.map(helperMsgHtml).join('') || '<div class="empty">Спроси про моды, версии Minecraft или попроси собрать сборку.</div>'}</div>${composer('fr-helper', 'frHelperIn', 'Спроси помогатора')}`;
+  // Помогатор временно отключён: API-ключ пока не решён (см. Beta-плашку)
+  body.innerHTML = `<div class="chat-head"><b>Помогатор</b><span class="muted helper-info">Beta</span></div>
+    <div class="helper-beta">(Beta) бот не поддерживается. ИИ-помощник временно отключён, пока решаем вопрос с API-ключами.</div>
+    <div class="msgs" id="msgs">${FR.helper.map(helperMsgHtml).join('')}</div>`;
   scrollMsgs();
 }
 async function loadHelper() {
@@ -513,6 +511,7 @@ document.addEventListener('submit', async (e) => {
       return;
     }
     if (kind === 'fr-helper') {
+      return toast('(Beta) бот не поддерживается, сейчас он отключён', true);
       const q = f.text.value.trim();
       if (!q) return;
       f.text.value = '';

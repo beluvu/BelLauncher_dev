@@ -490,3 +490,5 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: .1px; }
 .helper-pack { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.06); display: flex; flex-direction: column; gap: 4px; }
 .helper-pack small { opacity: .75; word-break: break-word; }
 .helper-info { margin-left: 8px; }
+
+.helper-beta { margin: 10px 14px 0; padding: 10px 12px; border-radius: 10px; background: rgba(220, 38, 38, .18); border: 1px solid rgba(248, 113, 113, .55); color: #fecaca; font-size: 13px; }
