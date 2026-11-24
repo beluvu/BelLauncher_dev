@@ -66,13 +66,20 @@ function registerBox() {
 /* ---------- мессенджер: вкладка «Друзья» заменяет весь интерфейс лаунчера ---------- */
 const MI = (n) => `<span class="mi mi-${n}" aria-hidden="true"></span>`;
 function messengerOn() { return !!S.social && S.view === 'friends'; }
+// настройки мессенджера (тема и размер окна) хранятся локально; без хранилища — по умолчанию
+function msgPref(key, def) { try { return localStorage.getItem('beluvu-msg-' + key) || def; } catch (e) { return def; } }
+function msgSetPref(key, val) { try { localStorage.setItem('beluvu-msg-' + key, val); } catch (e) { /* без хранилища — не страшно */ } }
 function messengerShell() {
   const app = $('#app');
   app.classList.add('msg-on');
+  const theme = msgPref('theme', document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+  const compact = msgPref('size', 'full') === 'compact';
   app.innerHTML = `
-    <div class="msg-app">
+    <div class="msg-app ${compact ? 'compact' : ''}" data-mtheme="${theme}">
       <header class="msg-top pywebview-drag-region">
         <span class="msg-title">Друзья</span><span class="spacer"></span>
+        <button class="msg-ctl pywebview-no-drag" data-act="fr-theme" title="Тема мессенджера">${theme === 'dark' ? '☀' : '☾'}</button>
+        <button class="msg-ctl pywebview-no-drag" data-act="fr-size" title="${compact ? 'На весь экран' : 'Маленькое окно'}">${compact ? '⤢' : '⤡'}</button>
         <a class="tg-link pywebview-no-drag" data-act="fr-tg" href="#">Наш Телеграм</a>
         <div class="win pywebview-no-drag">
           <button data-win="min" title="Свернуть">${ICON.min}</button>
@@ -592,6 +599,20 @@ document.addEventListener('click', async (e) => {
     return;
   }
   if (act === 'fr-back') { return go('home'); }
+  if (act === 'fr-theme') {
+    const root = document.querySelector('.msg-app'); if (!root) return;
+    const next = root.dataset.mtheme === 'dark' ? 'light' : 'dark';
+    root.dataset.mtheme = next; msgSetPref('theme', next);
+    a.textContent = next === 'dark' ? '☀' : '☾';
+    return;
+  }
+  if (act === 'fr-size') {
+    const root = document.querySelector('.msg-app'); if (!root) return;
+    const on = !root.classList.contains('compact');
+    root.classList.toggle('compact', on); msgSetPref('size', on ? 'compact' : 'full');
+    a.textContent = on ? '⤢' : '⤡'; a.title = on ? 'На весь экран' : 'Маленькое окно';
+    return;
+  }
   if (act === 'fr-helper') { FR.tab = 'helper'; FR.peer = null; FR.viewNick = null; paintPlayers(); paintTab(); return loadHelper(); }
   if (act === 'fr-helper-buy') { return buyHelper(); }
   if (act === 'fr-helper-install') { return installHelper(a.dataset.mods); }
