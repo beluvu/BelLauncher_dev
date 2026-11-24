@@ -77,30 +77,30 @@ function messengerShell() {
   app.innerHTML = `
     <div class="msg-app ${compact ? 'compact' : ''}" data-mtheme="${theme}">
       <header class="msg-top pywebview-drag-region">
-        <span class="msg-title">Друзья</span><span class="spacer"></span>
-        <button class="msg-ctl pywebview-no-drag" data-act="fr-theme" title="Тема мессенджера">${theme === 'dark' ? '☀' : '☾'}</button>
-        <button class="msg-ctl pywebview-no-drag" data-act="fr-size" title="${compact ? 'На весь экран' : 'Маленькое окно'}">${compact ? '⤢' : '⤡'}</button>
-        <a class="tg-link pywebview-no-drag" data-act="fr-tg" href="#">Наш Телеграм</a>
+        <span class="msg-title">${tr('fr_title')}</span><span class="spacer"></span>
+        <button class="msg-ctl pywebview-no-drag" data-act="fr-theme" title="${tr('msg_theme')}">${theme === 'dark' ? '☀' : '☾'}</button>
+        <button class="msg-ctl pywebview-no-drag" data-act="fr-size" title="${compact ? tr('msg_full') : tr('msg_small')}">${compact ? '⤢' : '⤡'}</button>
+        <a class="tg-link pywebview-no-drag" data-act="fr-tg" href="#">${tr('tg_link')}</a>
         <div class="win pywebview-no-drag">
-          <button data-win="min" title="Свернуть">${ICON.min}</button>
-          <button data-win="max" title="Развернуть">${ICON.max}</button>
-          <button data-win="close" class="x" title="Закрыть">${ICON.close}</button>
+          <button data-win="min" title="${tr('win_min')}">${ICON.min}</button>
+          <button data-win="max" title="${tr('win_max')}">${ICON.max}</button>
+          <button data-win="close" class="x" title="${tr('win_close')}">${ICON.close}</button>
         </div>
       </header>
       <div class="msg-body">
         <nav class="msg-rail">
-          <button data-act="fr-back" title="Меню лаунчера">${MI('menu')}</button>
-          <button data-act="fr-rail" data-rail="chat" title="Общий чат">${MI('chat')}</button>
+          <button data-act="fr-back" title="${tr('menu')}">${MI('menu')}</button>
+          <button data-act="fr-rail" data-rail="chat" title="${tr('fr_general')}">${MI('chat')}</button>
           <button data-act="fr-rail" data-rail="profile" title="Мой профиль">${MI('person')}</button>
           ${S.social ? `<button data-nav="news" title="Новости">${MI('bell')}</button>` : ''}
           <span class="spacer"></span>
           <button data-nav="settings" title="Настройки">${MI('gear')}</button>
         </nav>
         <aside class="msg-list">
-          <div class="msg-search">${MI('search')}<input class="input" id="frSearch" placeholder="Поиск игроков" autocomplete="off" value="${esc(FR.q)}"></div>
-          <button class="fr-row chat-row" data-act="fr-general"><span class="av">#</span><span>Общий чат</span></button>
+          <div class="msg-search">${MI('search')}<input class="input" id="frSearch" placeholder="${tr('fr_search')}" autocomplete="off" value="${esc(FR.q)}"></div>
+          <button class="fr-row chat-row" data-act="fr-general"><span class="av">#</span><span>${tr('fr_general')}</span></button>
           <button class="fr-row helper-row" data-act="fr-helper"><span class="av">✨</span><span>Помогатор</span></button>
-          <div class="msg-sect">Игроки <span class="muted" id="frCount"></span></div>
+          <div class="msg-sect">${tr('fr_players')} <span class="muted" id="frCount"></span></div>
           <div class="fr-list" id="frList"></div>
         </aside>
         <section class="msg-convo" id="frConvo"><div id="frBody" class="fr-body"></div></section>
@@ -183,18 +183,18 @@ function renderFriends() {
 function paintPlayers() {
   const box = $('#frList'); if (!box) return;
   const online = FR.players.filter((p) => p.online).length;
-  const cnt = $('#frCount'); if (cnt) cnt.textContent = `${online} онлайн · ${FR.players.length}`;
+  const cnt = $('#frCount'); if (cnt) cnt.textContent = `${online} ${tr('fr_online')} · ${FR.players.length}`;
   const q = FR.q.trim().toLowerCase();
   const list = q ? FR.players.filter((p) => p.nick.toLowerCase().includes(q)) : FR.players;
   box.innerHTML = list.map((p) => `<button class="fr-row ${FR.peer === p.nick ? 'on' : ''} ${p.me ? 'me' : ''}" data-act="fr-peer" data-nick="${esc(p.nick)}">
       <span class="av">${avatarInner(p.avatar, p.nick)}<i class="dot ${p.online ? 'on' : ''}"></i></span><span>${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}${p.me ? ' <small class="muted">(ты)</small>' : ''}</span></button>`).join('')
-    || `<div class="empty">${q ? 'Никого не нашли' : 'Пока никого'}</div>`;
+    || `<div class="empty">${q ? tr('fr_notfound') : tr('fr_nobody')}</div>`;
 }
 function paintTab() {
   const body = $('#frBody'); if (!body) return;
   paintRail();
   if (FR.tab === 'chat') {
-    body.innerHTML = `<div class="chat-head"><b>Общий чат</b></div>
+    body.innerHTML = `<div class="chat-head"><b>${tr('fr_general')}</b></div>
       <div class="msgs" id="msgs">${FR.chat.map(msgHtml).join('') || '<div class="empty">Сообщений пока нет.</div>'}</div>${composer('fr-chat', 'frChatIn', 'Сообщение в общий чат')}`;
     scrollMsgs();
   } else if (FR.tab === 'dm') {

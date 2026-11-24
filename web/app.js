@@ -91,7 +91,7 @@ const activeInstall = () => S.installs.find((x) => x.active) || null;
 function currentTitle() {
   const a = activeInstall();
   if (a) return a.title;
-  return S.st && S.st.version ? `Minecraft ${S.st.version}` : 'Версия не выбрана';
+  return S.st && S.st.version ? `Minecraft ${S.st.version}` : tr('version_none');
 }
 function currentSub() {
   const a = activeInstall();
@@ -122,9 +122,9 @@ function shell() {
   $('#app').classList.remove('msg-on');
   // «Друзья» и «Новости» показываются только когда чат включён (SOCIAL_ENABLED в config.py)
   const nav = VIEWS.filter(([k]) => S.social || (k !== 'friends' && k !== 'news')).map(([k, label, ic]) => {
-    const GROUP = { home: 'Игра', friends: 'Общение', packs: 'Сборки и моды', skins: 'Персонализация' };
-    const group = GROUP[k] ? `<div class="nav-label">${GROUP[k]}</div>` : '';
-    return group + `<button data-nav="${k}" class="${S.view === k ? 'on' : ''}">${ICON[ic]}<span>${label}</span></button>`;
+    const GROUP = { home: 'grp_game', friends: 'grp_social', packs: 'grp_packs', skins: 'grp_skins' };
+    const group = GROUP[k] ? `<div class="nav-label">${tr(GROUP[k])}</div>` : '';
+    return group + `<button data-nav="${k}" class="${S.view === k ? 'on' : ''}">${ICON[ic]}<span>${tr('nav_' + k)}</span></button>`;
   }).join('');
   if (!S.updChecked) { S.updChecked = true; checkUpdate(); }
   $('#app').innerHTML = `
@@ -132,7 +132,7 @@ function shell() {
       <div class="brand"><img src="${LOGO}" alt=""><div><b>Beluvu</b><small>Launcher</small></div></div>
       <div class="profile" data-nav="skins" title="Скины">
         <div class="head" id="head" style="background-image:url('${S.headUrl || ''}')"></div>
-        <div><div class="nm">${esc(S.acc ? S.acc.nick : S.st.nick)}</div><div class="st">${S.social && S.acc ? 'В сети' : 'Оффлайн'}</div></div>
+        <div><div class="nm">${esc(S.acc ? S.acc.nick : S.st.nick)}</div><div class="st">${S.social && S.acc ? tr('online') : tr('offline')}</div></div>
       </div>
       <nav class="nav">${nav}</nav>
       <div class="side-foot"><div id="updSlot"></div>Beluvu Launcher ${S.info ? esc(S.info.version) : ''}</div>
@@ -140,11 +140,11 @@ function shell() {
     <section class="main">
       <header class="topbar pywebview-drag-region">
         <h1 id="ttl"></h1><span id="badge"></span><span class="spacer"></span>
-        <a class="tg-link pywebview-no-drag" data-act="fr-tg" href="#">Наш Телеграм</a>
+        <a class="tg-link pywebview-no-drag" data-act="fr-tg" href="#">${tr('tg_link')}</a>
         <div class="win pywebview-no-drag">
-          <button data-win="min" title="Свернуть">${ICON.min}</button>
-          <button data-win="max" title="Развернуть">${ICON.max}</button>
-          <button data-win="close" class="x" title="Закрыть">${ICON.close}</button>
+          <button data-win="min" title="${tr('win_min')}">${ICON.min}</button>
+          <button data-win="max" title="${tr('win_max')}">${ICON.max}</button>
+          <button data-win="close" class="x" title="${tr('win_close')}">${ICON.close}</button>
         </div>
       </header>
       <div class="content" id="content"></div>
@@ -153,7 +153,7 @@ function shell() {
 }
 function setNav() {
   document.querySelectorAll('[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === S.view && b.tagName === 'BUTTON'));
-  const t = $('#ttl'); if (t) t.textContent = TITLES[S.view] || '';
+  const t = $('#ttl'); if (t) t.textContent = TITLES[S.view] ? tr('nav_' + S.view) : '';
   const b = $('#badge');
   if (b) {
     const src = S.view === 'packs' ? S.pack.source : (['mods', 'resourcepacks', 'shaders'].includes(S.view) ? S.mods.source : null);
@@ -199,7 +199,7 @@ function renderHome() {
     <div class="panel hero">
       <img class="gem" src="assets/crystal-b.png" alt="">
       <div class="info">
-        <span class="badge ${S.running ? 'ok' : ''}" id="hstate">${S.running ? 'Игра запущена' : 'Готово к игре'}</span>
+        <span class="badge ${S.running ? 'ok' : ''}" id="hstate">${S.running ? tr('running') : tr('ready')}</span>
         <h2>${esc(currentTitle())}</h2>
         <div class="sub">${esc(currentSub())}</div>
       </div>
@@ -221,7 +221,7 @@ function updateProgressDom() {
   p.classList.toggle('ind', !!st && st.pct == null);
   const i = p.querySelector('i'); if (i) i.style.width = st && st.pct != null ? Math.round(st.pct * 100) + '%' : '0%';
   const t = $('#stxt'); if (t) t.textContent = st ? st.text : '';
-  const b = $('#hstate'); if (b) { b.textContent = S.running ? 'Игра запущена' : 'Готово к игре'; b.classList.toggle('ok', S.running); }
+  const b = $('#hstate'); if (b) { b.textContent = S.running ? tr('running') : tr('ready'); b.classList.toggle('ok', S.running); }
   const pb = document.querySelector('[data-act="play"]'); if (pb) pb.disabled = S.running || S.busyPlay || !S.st.version;
 }
 
@@ -666,24 +666,26 @@ function renderSettings() {
   content().innerHTML = `
     <div class="panel" style="margin-bottom:14px">
       ${accountRow()}
-      <div class="set-row"><div class="l"><b>Тема</b><small>Светлая или тёмная</small></div>
-        <div class="chips">${[['light', 'Светлая'], ['dark', 'Тёмная']].map(([k, l]) => `<button class="chip ${(s.theme || 'light') === k ? 'on' : ''}" data-theme-set="${k}">${l}</button>`).join('')}</div></div>
-      <div class="set-row"><div class="l"><b>Ник</b><small>3–16 символов: латиница, цифры, _</small></div>
-        <div class="field" style="max-width:300px"><input class="input" value="${esc(s.nick)}" data-in="nick"><button class="btn" data-act="savenick">Сохранить</button></div></div>
-      <div class="set-row"><div class="l"><b>Память</b><small>Сколько ОЗУ отдать игре: ${s.ramGb} ГБ</small></div>
+      <div class="set-row"><div class="l"><b>${tr('set_theme')}</b><small>${tr('set_theme_sub')}</small></div>
+        <div class="chips">${[['light', tr('theme_light')], ['dark', tr('theme_dark')]].map(([k, l]) => `<button class="chip ${(s.theme || 'light') === k ? 'on' : ''}" data-theme-set="${k}">${l}</button>`).join('')}</div></div>
+      <div class="set-row"><div class="l"><b>${tr('set_lang')}</b><small>${tr('set_lang_sub')}</small></div>
+        <div class="chips">${LANGS.map(([k, l]) => `<button class="chip ${LANG === k ? 'on' : ''}" data-lang-set="${k}">${l}</button>`).join('')}</div></div>
+      <div class="set-row"><div class="l"><b>${tr('set_nick')}</b><small>${tr('set_nick_sub')}</small></div>
+        <div class="field" style="max-width:300px"><input class="input" value="${esc(s.nick)}" data-in="nick"><button class="btn" data-act="savenick">${tr('save')}</button></div></div>
+      <div class="set-row"><div class="l"><b>${tr('set_ram')}</b><small>${tr('set_ram_sub', s.ramGb)}</small></div>
         <div class="ram">${[2, 3, 4, 6, 8, 12].map((n) => `<button class="chip ${s.ramGb === n ? 'on' : ''}" data-ram="${n}">${n} ГБ</button>`).join('')}</div></div>
     </div>
     <div class="panel">
-      <div class="set-row"><div class="l"><b>Папка игры</b><small>Версии, библиотеки, сохранения и моды</small></div><button class="btn" data-act="openfolder" data-what="game">Открыть</button></div>
-      <div class="set-row"><div class="l"><b>Папка лаунчера</b><small>Настройки, Java и логи</small></div><button class="btn" data-act="openfolder" data-what="data">Открыть</button></div>
+      <div class="set-row"><div class="l"><b>${tr('set_gamedir')}</b><small>${tr('set_gamedir_sub')}</small></div><button class="btn" data-act="openfolder" data-what="game">${tr('open')}</button></div>
+      <div class="set-row"><div class="l"><b>${tr('set_ldir')}</b><small>${tr('set_ldir_sub')}</small></div><button class="btn" data-act="openfolder" data-what="data">${tr('open')}</button></div>
     </div>`;
 }
 function renderAbout() {
   content().innerHTML = `<div class="panel" style="padding:30px;display:flex;gap:26px;align-items:center">
     <img class="about-logo" src="${LOGO}" alt="">
     <div><h2 style="font-size:24px">Beluvu Launcher</h2>
-      <div class="muted" style="margin-top:6px">Версия ${S.info ? esc(S.info.version) : ''}</div>
-      <div class="muted" style="margin-top:12px;font-size:12px">Моды и модпаки: Modrinth</div></div></div>`;
+      <div class="muted" style="margin-top:6px">${tr('about_version')} ${S.info ? esc(S.info.version) : ''}</div>
+      <div class="muted" style="margin-top:12px;font-size:12px">${tr('about_sources')}</div></div></div>`;
 }
 
 /* ---------- установки ---------- */
@@ -1049,6 +1051,12 @@ document.addEventListener('click', async (e) => {
   if (ms) { S.mods.source = ms.dataset.msrc; S.mods.items = []; setNav(); renderMods(); loadInstalled(); searchMods(); return; }
   const ps = t.closest('[data-psrc]');
   if (ps) { S.pack.source = ps.dataset.psrc; S.pack.items = []; renderPacks(); searchPacks(); return; }
+  const lg = t.closest('[data-lang-set]');
+  if (lg) {
+    setLang(lg.dataset.langSet);
+    shell(); setNav(); go(S.view);
+    return;
+  }
   const th = t.closest('[data-theme-set]');
   if (th) {
     const r = await safe(api.state.set({ theme: th.dataset.themeSet }));
