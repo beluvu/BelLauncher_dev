@@ -40,7 +40,7 @@ async function ask(messages: { role: string; content: string }[]): Promise<strin
   const r = await fetch(`${BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
-    body: JSON.stringify({ model: MODEL, messages, max_completion_tokens: 900 }),
+    body: JSON.stringify({ model: MODEL, messages, max_completion_tokens: 4000 }),
   });
   if (!r.ok) throw new Error(`openai ${r.status}: ${(await r.text()).slice(0, 300)}`);
   const j = await r.json();
