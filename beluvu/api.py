@@ -10,7 +10,7 @@ import sys
 import threading
 import time
 
-from . import coins, helper, installs, instance, launch, modrinth, paths, settings, skins, social, support_build, update, versions
+from . import coins, helper, installs, instance, launch, modrinth, paths, settings, skins, social, support_build, uninstall, update, versions
 from .config import APP_VERSION, SOCIAL_ENABLED
 from .util import rm_rf
 
@@ -175,6 +175,18 @@ class Api:
             return {'ok': True, 'data': update.check()}
         except update.UpdateError as e:
             return {'ok': False, 'error': str(e)}
+
+    def app_uninstall(self, a=None):
+        """Удаляет лаунчер с компьютера. Аккаунт на сервере не трогается."""
+        remove_games = bool((a or {}).get('removeGames'))
+        try:
+            uninstall.start(remove_games)
+        except OSError as e:
+            return {'ok': False, 'error': 'Не получилось запустить удаление: ' + str(e)}
+        if self._window is not None:
+            self._window.destroy()
+        threading.Timer(1.5, os._exit, args=(0,)).start()
+        return {'ok': True}
 
     def update_install(self):
         try:

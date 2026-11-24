@@ -678,6 +678,13 @@ function renderSettings() {
     <div class="panel">
       <div class="set-row"><div class="l"><b>${tr('set_gamedir')}</b><small>${tr('set_gamedir_sub')}</small></div><button class="btn" data-act="openfolder" data-what="game">${tr('open')}</button></div>
       <div class="set-row"><div class="l"><b>${tr('set_ldir')}</b><small>${tr('set_ldir_sub')}</small></div><button class="btn" data-act="openfolder" data-what="data">${tr('open')}</button></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="set-row"><div class="l"><b>${tr('uninstall')}</b><small>${tr('uninstall_sub')}</small></div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          <label class="check-row"><input type="checkbox" data-act="uninst-games" ${S.uninst && S.uninst.games ? 'checked' : ''}> ${tr('uninstall_games')}</label>
+          <button class="btn danger" data-act="uninst">${S.uninst && S.uninst.confirm ? tr('uninstall_confirm') : tr('uninstall')}</button>
+        </div></div>
     </div>`;
 }
 function renderAbout() {
@@ -1151,6 +1158,19 @@ document.addEventListener('click', async (e) => {
     const r = await safe(api.state.set({ skin: { type: stype, id: sid } }));
     if (r && r.error) return toast(r.error, true);
     S.st = r; await loadHead(); shell(); setNav(); renderSkins(); return;
+  }
+  if (act === 'uninst-games') { S.uninst = { ...(S.uninst || {}), games: !!a.checked }; return; }
+  if (act === 'uninst') {
+    if (!(S.uninst && S.uninst.confirm)) {
+      S.uninst = { ...(S.uninst || {}), confirm: true };
+      renderSettings();
+      setTimeout(() => { if (S.uninst && S.uninst.confirm) { S.uninst.confirm = false; if (S.view === 'settings') renderSettings(); } }, 4000);
+      return;
+    }
+    const r = await safe(api.uninstall(!!(S.uninst && S.uninst.games)));
+    if (!r || !r.ok) { S.uninst.confirm = false; renderSettings(); return toast((r && r.error) || tr('uninstall_fail'), true); }
+    toast(tr('uninstall_done'));
+    return;
   }
   if (act === 'rmskin') {
     const sid = a.dataset.sid;

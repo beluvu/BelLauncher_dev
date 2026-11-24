@@ -83,6 +83,7 @@ window.addEventListener('unhandledrejection', (e) => { try { window.__errs.push(
       equip: (kind, id) => call('coins_equip', kind, id)
     },
     openFolder: (what) => call('app_open_folder', what),
+    uninstall: (removeGames) => call('app_uninstall', { removeGames }),
     win: { min: () => call('win_min'), max: () => call('win_max'), close: () => call('win_close') },
     onEvent: (cb) => { listeners.push(cb); }
   };
