@@ -18,6 +18,7 @@ const I18N = {
     fr_online: 'онлайн', fr_nobody: 'Пока никого', fr_notfound: 'Никого не нашли', fr_you: 'ты',
     about_version: 'Версия', about_sources: 'Моды и модпаки: Modrinth',
     uninstall: 'Удалить лаунчер', uninstall_sub: 'Аккаунт останется на сервере: войти можно по нику и паролю', uninstall_games: 'Удалить также игру, сборки и моды', uninstall_confirm: 'Точно удалить?', uninstall_done: 'Лаунчер удаляется…', uninstall_fail: 'Не получилось удалить',
+    presence: 'Где я играю', presence_sub: 'Друзья видят сервер или одиночную игру', presence_on: 'Вкл', presence_off: 'Выкл',
   },
   en: {
     nav_home: 'Home', nav_friends: 'Friends', nav_news: 'News', nav_versions: 'Game version', nav_packs: 'Modpacks',
@@ -36,6 +37,7 @@ const I18N = {
     fr_online: 'online', fr_nobody: 'No one yet', fr_notfound: 'No one found', fr_you: 'you',
     about_version: 'Version', about_sources: 'Mods and modpacks: Modrinth',
     uninstall: 'Uninstall launcher', uninstall_sub: 'Your account stays on the server: you can log in with nickname and password', uninstall_games: 'Also delete the game, modpacks and mods', uninstall_confirm: 'Really uninstall?', uninstall_done: 'Uninstalling the launcher…', uninstall_fail: 'Could not uninstall',
+    presence: 'Show where I play', presence_sub: 'Friends see the server or singleplayer', presence_on: 'On', presence_off: 'Off',
   },
   uk: {
     nav_home: 'Головна', nav_friends: 'Друзі', nav_news: 'Новини', nav_versions: 'Версія гри', nav_packs: 'Модпаки',
@@ -54,6 +56,7 @@ const I18N = {
     fr_online: 'онлайн', fr_nobody: 'Поки нікого', fr_notfound: 'Нікого не знайшли', fr_you: 'ти',
     about_version: 'Версія', about_sources: 'Моди та модпаки: Modrinth',
     uninstall: 'Видалити лаунчер', uninstall_sub: 'Акаунт залишиться на сервері: увійти можна за ніком і паролем', uninstall_games: 'Видалити також гру, збірки та моди', uninstall_confirm: 'Точно видалити?', uninstall_done: 'Лаунчер видаляється…', uninstall_fail: 'Не вдалося видалити',
+    presence: 'Де я граю', presence_sub: 'Друзі бачать сервер або одиночну гру', presence_on: 'Увімк', presence_off: 'Вимк',
   },
   be: {
     nav_home: 'Галоўная', nav_friends: 'Сябры', nav_news: 'Навіны', nav_versions: 'Версія гульні', nav_packs: 'Модпакі',
@@ -72,6 +75,7 @@ const I18N = {
     fr_online: 'анлайн', fr_nobody: 'Пакуль нікога', fr_notfound: 'Нікога не знайшлі', fr_you: 'ты',
     about_version: 'Версія', about_sources: 'Моды і модпакі: Modrinth',
     uninstall: 'Выдаліць лаўнчар', uninstall_sub: 'Акаўнт застанецца на серверы: увайсці можна па ніку і паролі', uninstall_games: 'Выдаліць таксама гульню, зборкі і моды', uninstall_confirm: 'Дакладна выдаліць?', uninstall_done: 'Лаўнчар выдаляецца…', uninstall_fail: 'Не атрымалася выдаліць',
+    presence: 'Дзе я гуляю', presence_sub: 'Сябры бачаць сервер або адзіночную гульню', presence_on: 'Укл', presence_off: 'Выкл',
   },
   zh: {
     nav_home: '主页', nav_friends: '好友', nav_news: '新闻', nav_versions: '游戏版本', nav_packs: '整合包',
@@ -90,6 +94,7 @@ const I18N = {
     fr_online: '在线', fr_nobody: '暂无', fr_notfound: '没有找到', fr_you: '你',
     about_version: '版本', about_sources: '模组与整合包：Modrinth',
     uninstall: '卸载启动器', uninstall_sub: '账号保留在服务器上：可用昵称和密码登录', uninstall_games: '同时删除游戏、整合包和模组', uninstall_confirm: '确定卸载？', uninstall_done: '正在卸载启动器…', uninstall_fail: '无法卸载',
+    presence: '显示我在玩什么', presence_sub: '好友可以看到服务器或单人游戏', presence_on: '开', presence_off: '关',
   },
 };
 // текущий язык: сохраняется в браузерном хранилище лаунчера; без хранилища — русский

@@ -56,8 +56,20 @@ def appearance_set(avatar, items, show_all=True):
                  p_all=bool(show_all))
 
 
+def presence():
+    try:
+        rows = _call('social_presence')
+    except SocialError:
+        return {}
+    return {r['nick']: r['where'] for r in (rows or []) if r.get('nick') and r.get('where')}
+
+
 def players():
-    return _call('social_players')
+    rows = _call('social_players')
+    where = presence()
+    for p in rows or []:
+        p['where'] = where.get(p.get('nick'))
+    return rows
 
 
 def profile(nick):

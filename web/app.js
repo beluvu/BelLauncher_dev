@@ -672,6 +672,8 @@ function renderSettings() {
         <div class="chips">${[['light', tr('theme_light')], ['dark', tr('theme_dark')]].map(([k, l]) => `<button class="chip ${(s.theme || 'light') === k ? 'on' : ''}" data-theme-set="${k}">${l}</button>`).join('')}</div></div>
       <div class="set-row"><div class="l"><b>${tr('set_lang')}</b><small>${tr('set_lang_sub')}</small></div>
         <div class="chips">${LANGS.map(([k, l]) => `<button class="chip ${LANG === k ? 'on' : ''}" data-lang-set="${k}">${l}</button>`).join('')}</div></div>
+      <div class="set-row"><div class="l"><b>${tr('presence')}</b><small>${tr('presence_sub')}</small></div>
+        <div class="chips">${[[true, tr('presence_on')], [false, tr('presence_off')]].map(([v, l]) => `<button class="chip ${(s.showPresence !== false) === v ? 'on' : ''}" data-presence="${v}">${l}</button>`).join('')}</div></div>
       <div class="set-row"><div class="l"><b>${tr('set_nick')}</b><small>${tr('set_nick_sub')}</small></div>
         <div class="field" style="max-width:300px"><input class="input" value="${esc(s.nick)}" data-in="nick"><button class="btn" data-act="savenick">${tr('save')}</button></div></div>
       <div class="set-row"><div class="l"><b>${tr('set_ram')}</b><small>${tr('set_ram_sub', s.ramGb)}</small></div>
@@ -1061,6 +1063,13 @@ document.addEventListener('click', async (e) => {
   if (ms) { S.mods.source = ms.dataset.msrc; S.mods.items = []; setNav(); renderMods(); loadInstalled(); searchMods(); return; }
   const ps = t.closest('[data-psrc]');
   if (ps) { S.pack.source = ps.dataset.psrc; S.pack.items = []; renderPacks(); searchPacks(); return; }
+  const pr = t.closest('[data-presence]');
+  if (pr) {
+    const r = await safe(api.state.set({ showPresence: pr.dataset.presence === 'true' }));
+    if (r && r.error) return toast(r.error, true);
+    S.st = r; renderSettings();
+    return;
+  }
   const lg = t.closest('[data-lang-set]');
   if (lg) {
     setLang(lg.dataset.langSet);

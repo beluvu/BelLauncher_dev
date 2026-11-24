@@ -21,7 +21,7 @@ def make_guest_nick():
 def _defaults():
     return {
         'nick': None, 'version': None, 'loader': 'fabric', 'ramGb': 4,
-        'skin': {'type': 'steve', 'id': None}, 'uploads': [], 'preferredMods': [], 'selectedModpack': None, 'selectedInstall': None,
+        'skin': {'type': 'steve', 'id': None}, 'uploads': [], 'preferredMods': [], 'selectedModpack': None, 'selectedInstall': None, 'showPresence': True, 'friendsOverlay': True,
         'theme': 'light'
     }
 
@@ -88,6 +88,10 @@ def update(patch):
             s['selectedModpack'] = patch['selectedModpack'] or None
         if ('version' in patch or 'loader' in patch) and 'selectedInstall' not in patch:
             s['selectedInstall'] = None  # выбрали версию вручную — своя установка больше не активна
+        if 'showPresence' in patch:
+            s['showPresence'] = bool(patch['showPresence'])
+        if 'friendsOverlay' in patch:
+            s['friendsOverlay'] = bool(patch['friendsOverlay'])
         if 'selectedInstall' in patch:
             s['selectedInstall'] = str(patch['selectedInstall']) if patch['selectedInstall'] else None
         if 'skin' in patch:

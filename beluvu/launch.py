@@ -8,7 +8,7 @@ import threading
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 
-from . import coins, custom_installs, instance, java, loaders, modrinth, paths, settings, skins, versions
+from . import coins, custom_installs, instance, java, loaders, modrinth, paths, presence, settings, skins, versions
 from .util import download, file_hash, read_json, write_json
 
 WIN = sys.platform == 'win32'
@@ -249,6 +249,28 @@ def gc_flags(ram_gb):
                    '-XX:SurvivorRatio=32', '-XX:MaxTenuringThreshold=1']
 
 
+AGENT_JAR = os.path.join('agent', 'friends-agent.jar')
+
+
+def agent_args(s):
+    """-javaagent для «Друзей в игре»: конфиг с портом и токеном локального канала. Пусто, если выключено или агент не найден."""
+    import json
+    import secrets
+    import socket
+    jar = os.path.join(paths.resource_root(), AGENT_JAR)
+    if s.get('friendsOverlay') is False or not os.path.isfile(jar):
+        return []
+    with socket.socket() as sk:
+        sk.bind(('127.0.0.1', 0))
+        port = sk.getsockname()[1]
+    d = os.path.join(paths.data(), 'agent')
+    os.makedirs(d, exist_ok=True)
+    cfg = os.path.join(d, 'config.json')
+    with open(cfg, 'w', encoding='utf-8') as f:
+        json.dump({'port': port, 'token': secrets.token_hex(16)}, f)
+    return ['-javaagent:' + jar + '=' + cfg]
+
+
 def build_command(vchain, java_path, values, ram_gb, log_args):
     args = vchain.get('arguments') or {}
     jvm = resolve_args(args.get('jvm'))
@@ -372,7 +394,7 @@ def play(emit):
         ram = (rec or {}).get('ramGb') or s.get('ramGb') or 4
         cmd = build_command(vchain, java_path, values, ram, log_args)
         import shlex
-        extra = shlex.split((rec or {}).get('jvmArgs') or '')
+        extra = shlex.split((rec or {}).get('jvmArgs') or '') + agent_args(s)
         if extra:
             # свои JVM-аргументы идут перед главным классом
             cut = cmd.index(vchain['mainClass'])
@@ -390,6 +412,7 @@ def play(emit):
         raise
 
     emit({'type': 'started'})
+    presence.watch(os.path.join(inst, 'logs', 'latest.log'), lambda: proc.poll() is None)
 
     def watch():
         code = proc.wait()
