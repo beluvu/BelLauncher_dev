@@ -165,6 +165,7 @@ function setNav() {
 const RENDER = {
   home: renderHome, friends: () => renderFriends(), news: () => renderNews(), versions: renderVersions, packs: renderPacks, mods: renderMods,
   resourcepacks: renderMods, shaders: renderMods, skins: renderSkins, crystals: renderCrystals, settings: renderSettings, about: renderAbout,
+  newinstall: () => renderNewInstall(),
 };
 function go(view) {
   stopPolls();
@@ -192,6 +193,7 @@ function renderHome() {
   const busy = S.running || S.busyPlay;
   const cards = S.installs.map((x) => `
     <div class="panel inst ${x.active ? 'on' : ''}" data-select-install="${esc(x.key)}">
+      <button class="inst-more" data-inst-menu="${esc(x.key)}" title="Действия" aria-label="Действия">⋯</button>
       <div class="row">${ico(x, 'sm')}<div style="min-width:0"><div class="t">${esc(x.title)}</div><div class="s">${esc(x.version)} · ${esc(LOADER[x.loader] || x.loader)}</div></div></div>
       <div class="foot"><span>${x.kind === 'pack' ? 'Сборка' : 'Версия'} · модов: ${x.mods}</span>${x.active ? '<span class="badge ok">Выбрана</span>' : ''}</div>
     </div>`).join('');
@@ -209,7 +211,7 @@ function renderHome() {
         <div class="status" id="stxt">${S.status ? esc(S.status.text) : ''}</div>
       </div>
     </div>
-    <div class="section-h"><h3>Ваши установки</h3><button class="btn small" data-nav="versions">${ICON.plus}<span>Новая установка</span></button></div>
+    <div class="section-h"><h3>Ваши установки</h3><button class="btn small" data-nav="newinstall">${ICON.plus}<span>Новая установка</span></button></div>
     <div class="grid">${cards || '<div class="empty" style="grid-column:1/-1">Установок пока нет. Выбери версию игры или сборку.</div>'}
       <button class="newcard" data-nav="packs"><span>+ Сборка из каталога</span></button></div>
     <p class="muted" style="margin-top:14px;font-size:12px">${a ? 'Папка игры: ' + esc(a.kind === 'pack' ? 'сборка' : 'версия') : ''}</p>`;
@@ -1033,6 +1035,7 @@ async function installMod(id) {
 document.addEventListener('click', async (e) => {
   try {
   const t = e.target;
+  if (await handleInstallClick(e)) return;
   const nav = t.closest('[data-nav]');
   if (nav) { go(nav.dataset.nav); return; }
   if (t.closest('[data-act="upd-install"]')) { return installUpdate(); }

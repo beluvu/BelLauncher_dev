@@ -16,7 +16,12 @@ window.addEventListener('unhandledrejection', (e) => { try { window.__errs.push(
     state: { get: () => call('state_get'), set: (patch) => call('state_set', patch) },
     versions: () => call('versions_list'),
     play: () => call('play_start'),
-    installs: { list: () => call('installs_list'), select: (key) => call('installs_select', key) },
+    installs: {
+      list: () => call('installs_list'), select: (key) => call('installs_select', key),
+      create: (a) => call('installs_create', a), get: (id) => call('installs_get', id),
+      update: (id, patch) => call('installs_update', { id, patch }), duplicate: (id) => call('installs_duplicate', id),
+      delete: (id) => call('installs_delete', id), open: (key) => call('installs_open', key)
+    },
     modrinth: {
       search: (a) => call('modrinth_search', a),
       install: (a) => call('modrinth_install', a),

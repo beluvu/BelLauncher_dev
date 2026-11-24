@@ -256,6 +256,61 @@ class Api:
     def installs_select(self, key):
         return installs.select(str(key))
 
+    def installs_create(self, a):
+        a = a or {}
+        try:
+            rec = custom_installs.create(a.get('name'), a.get('version'), a.get('loader'), a.get('folder') or 'isolated')
+        except ValueError as e:
+            return {'ok': False, 'error': str(e)}
+        return {'ok': True, 'data': rec}
+
+    def installs_get(self, item_id):
+        rec = custom_installs.get(str(item_id))
+        if rec is None:
+            return {'ok': False, 'error': 'Установка не найдена'}
+        return {'ok': True, 'data': rec}
+
+    def installs_update(self, a):
+        a = a or {}
+        try:
+            rec = custom_installs.update(str(a.get('id')), a.get('patch') or {})
+        except ValueError as e:
+            return {'ok': False, 'error': str(e)}
+        return {'ok': True, 'data': rec}
+
+    def installs_duplicate(self, item_id):
+        try:
+            rec = custom_installs.duplicate(str(item_id))
+        except ValueError as e:
+            return {'ok': False, 'error': str(e)}
+        return {'ok': True, 'data': rec}
+
+    def installs_delete(self, item_id):
+        try:
+            custom_installs.delete(str(item_id))
+        except ValueError as e:
+            return {'ok': False, 'error': str(e)}
+        s = settings.get()
+        if s.get('selectedInstall') == str(item_id):
+            settings.update({'selectedInstall': None})
+        return {'ok': True}
+
+    def installs_open(self, key):
+        key = str(key)
+        if key.startswith('inst:'):
+            rec = custom_installs.get(key[len('inst:'):])
+            if rec is None:
+                return {'ok': False, 'error': 'Установка не найдена'}
+            d = custom_installs.dir_of(rec)
+        elif key.startswith('pack:'):
+            d = instance.pack_dir(key[len('pack:'):])
+        else:
+            ver, loader = key[len('ver:'):].split('|', 1)
+            d = paths.instance(f'{ver}-{loader}')
+        os.makedirs(d, exist_ok=True)
+        self._open(d)
+        return {'ok': True}
+
     def modrinth_remove(self, a):
         modrinth.remove(str((a or {}).get('id')), instance.dir_for(settings.get()))
         return {'ok': True}

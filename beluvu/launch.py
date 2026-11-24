@@ -8,7 +8,7 @@ import threading
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 
-from . import coins, instance, java, loaders, modrinth, paths, settings, skins, versions
+from . import coins, custom_installs, instance, java, loaders, modrinth, paths, settings, skins, versions
 from .util import download, file_hash, read_json, write_json
 
 WIN = sys.platform == 'win32'
@@ -302,8 +302,12 @@ def play(emit):
         vjson = versions.version_json(s['version'])
         major = (vjson.get('javaVersion') or {}).get('majorVersion') or 8
 
+        # своя установка может задать свою Java, память и JVM-аргументы; пустое поле — глобальные настройки
+        rec = custom_installs.current(s)
         status(f'Проверяю Java {major}…')
-        java_path = java.ensure(major, lambda g, t: status(f'Скачиваю Java {major}…', g / t if t else None))
+        own_java = (rec or {}).get('javaPath')
+        java_path = own_java if own_java and os.path.isfile(own_java) else \
+            java.ensure(major, lambda g, t: status(f'Скачиваю Java {major}…', g / t if t else None))
         say('Java: ' + java_path)
 
         status('Проверяю клиент игры…')
@@ -365,7 +369,15 @@ def play(emit):
             'library_directory': os.path.join(paths.root(), 'libraries'),
             'resolution_width': '854', 'resolution_height': '480', 'user_properties': '{}',
         }
-        cmd = build_command(vchain, java_path, values, s.get('ramGb') or 4, log_args)
+        ram = (rec or {}).get('ramGb') or s.get('ramGb') or 4
+        cmd = build_command(vchain, java_path, values, ram, log_args)
+        import shlex
+        extra = shlex.split((rec or {}).get('jvmArgs') or '')
+        if extra:
+            # свои JVM-аргументы идут перед главным классом
+            cut = cmd.index(vchain['mainClass'])
+            cmd[cut:cut] = extra
+            say('Свои аргументы JVM: ' + ' '.join(extra))
         status('Запускаю игру…')
         say('Команда: ' + ' '.join(cmd[:3]) + ' … ' + vchain['mainClass'])
         creation = 0x08000000 if WIN else 0   # CREATE_NO_WINDOW

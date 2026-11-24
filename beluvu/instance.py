@@ -16,8 +16,12 @@ def pack_dir_name(slug):
 def dir_for(s):
     """Единственное место, где решается, из какой папки запускается игра и где лежат моды."""
     sm = s.get('selectedModpack')
+    from . import custom_installs  # импорт здесь, чтобы не было цикла
+    rec = custom_installs.current(s) if not (sm and sm.get('slug')) else None
     if sm and sm.get('slug'):
         d = paths.instance(pack_dir_name(sm['slug']))
+    elif rec:
+        d = custom_installs.dir_of(rec)
     else:
         d = paths.instance(f"{s.get('version')}-{s.get('loader')}")
     os.makedirs(d, exist_ok=True)

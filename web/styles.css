@@ -506,3 +506,33 @@ h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: .1px; }
 .msg-list .fr-row.on .muted { color: var(--on-accent); opacity: .75; }
 .msg-convo .chat-head { background: var(--glass-2); }
 .msg-convo .composer { background: var(--surface); }
+
+/* ---------- установки: новая установка, меню карточки, окно редактирования ---------- */
+.panel.inst { position: relative; }
+.inst-more { position: absolute; top: 6px; right: 6px; border: 0; background: transparent; color: var(--mute); font-size: 18px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.inst-more:hover { background: var(--tint); color: var(--text); }
+.inst-menu { position: fixed; z-index: 70; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, .25); }
+.inst-menu button { display: block; width: 100%; text-align: left; padding: 9px 12px; border: 0; background: transparent; color: var(--text); border-radius: 8px; cursor: pointer; font: inherit; }
+.inst-menu button:hover { background: var(--tint); }
+.inst-menu button.danger { color: var(--danger); }
+.ni-wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.ni-head { display: flex; align-items: center; gap: 12px; }
+.ni-head h2 { margin: 0; font-size: 20px; }
+.ni-tabs { display: flex; gap: 6px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.ni-tab { flex: 1; padding: 12px; border: 0; background: transparent; border-radius: 10px; color: var(--mute); cursor: pointer; font: inherit; font-weight: 600; }
+.ni-tab.on { background: var(--tint); color: var(--text); }
+.ni-form { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.ni-form .cap, .inst-dlg .cap { font-size: 12px; color: var(--mute); }
+.ni-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ni-snap { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--mute); cursor: pointer; }
+.ni-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.ni-seg button { padding: 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); cursor: pointer; font: inherit; font-weight: 600; }
+.ni-seg button.on { border-color: var(--line-2); background: var(--tint); }
+.ni-foot { display: flex; justify-content: flex-end; margin-top: 6px; }
+.inst-modal { position: fixed; inset: 0; background: rgba(15, 20, 30, .45); display: flex; align-items: center; justify-content: center; z-index: 80; padding: 16px; }
+.inst-dlg { width: min(560px, 100%); max-height: 92vh; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; }
+.inst-dlg > header { padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--line); }
+.inst-dlg .body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; overflow: auto; }
+.inst-dlg footer { padding: 12px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--line); }
+.inst-dlg .ico { width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center; background: var(--tint); color: var(--blue-2); font-size: 24px; font-weight: 700; flex: none; }
+.ni-ram { display: flex; flex-wrap: wrap; gap: 6px; }
