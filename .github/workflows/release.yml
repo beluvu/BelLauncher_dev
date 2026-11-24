@@ -4,6 +4,11 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Тег релиза, например v1.1.0'
+        required: true
+        default: 'v1.1.0'
 
 permissions:
   contents: write
@@ -49,6 +54,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/BeluvuLauncher.exe
+          tag_name: ${{ inputs.version || github.ref_name }}
           body: |
             sha256: ${{ steps.sum.outputs.sha256 }}
             size: ${{ steps.sum.outputs.size }}
