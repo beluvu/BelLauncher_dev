@@ -33,6 +33,9 @@ public final class BeluvuFriendsAgent {
             Thread t = new Thread(() -> serve(port, token), "beluvu-friends");
             t.setDaemon(true);
             t.start();
+            // callback для вставки в KeyboardHandler: кладём в системные свойства ДО трансформера (игре классы агента не видны)
+            java.util.function.BiConsumer<Object, Object> cb = (ev, act) -> onKey(ev, (Integer) act);
+            System.getProperties().put(KeyHook.PROP, cb);
             inst.addTransformer(new java.lang.instrument.ClassFileTransformer() {
                 @Override
                 public byte[] transform(ClassLoader loader, String className, Class<?> redefined,
