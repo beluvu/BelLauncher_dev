@@ -22,17 +22,14 @@ public final class BeluvuFriendsAgent {
 
     public static void premain(String args, Instrumentation inst) {
         try {
-            if (args == null || args.isEmpty()) {
-                log("no config, exiting");
+            // аргумент: "порт:токен" (только ASCII, путей нет)
+            Matcher m = Pattern.compile("^(\\d{2,5}):([0-9a-f]{32,})$").matcher(args == null ? "" : args.trim());
+            if (!m.matches()) {
+                log("bad args, exiting");
                 return;
             }
-            String json = new String(Files.readAllBytes(Paths.get(args)), StandardCharsets.UTF_8);
-            int port = intField(json, "port");
-            String token = stringField(json, "token");
-            if (port <= 0 || token == null || token.length() < 16) {
-                log("bad config");
-                return;
-            }
+            int port = Integer.parseInt(m.group(1));
+            String token = m.group(2);
             Thread t = new Thread(() -> serve(port, token), "beluvu-friends");
             t.setDaemon(true);
             t.start();

@@ -25,9 +25,11 @@ class AgentArgsTest(unittest.TestCase):
             args = launch.agent_args({'friendsOverlay': True})
         self.assertEqual(len(args), 1)
         self.assertTrue(args[0].startswith('-javaagent:'))
-        cfg = json.load(open(os.path.join(self.data, 'agent', 'config.json')))
-        self.assertGreater(cfg['port'], 0)
-        self.assertGreaterEqual(len(cfg['token']), 32)
+        tail = args[0].split('=', 1)[1]
+        port, token = tail.split(':', 1)
+        self.assertGreater(int(port), 0)
+        self.assertGreaterEqual(len(token), 32)
+        self.assertTrue(all(ord(c) < 128 for c in args[0]))
 
     def test_disabled_gives_no_agent(self):
         self.assertEqual(launch.agent_args({'friendsOverlay': False}), [])

@@ -254,7 +254,6 @@ AGENT_JAR = os.path.join('agent', 'friends-agent.jar')
 
 def agent_args(s):
     """-javaagent для «Друзей в игре»: конфиг с портом и токеном локального канала. Пусто, если выключено или агент не найден."""
-    import json
     import secrets
     import socket
     jar = os.path.join(paths.resource_root(), AGENT_JAR)
@@ -263,12 +262,8 @@ def agent_args(s):
     with socket.socket() as sk:
         sk.bind(('127.0.0.1', 0))
         port = sk.getsockname()[1]
-    d = os.path.join(paths.data(), 'agent')
-    os.makedirs(d, exist_ok=True)
-    cfg = os.path.join(d, 'config.json')
-    with open(cfg, 'w', encoding='utf-8') as f:
-        json.dump({'port': port, 'token': secrets.token_hex(16)}, f)
-    return ['-javaagent:' + jar + '=' + cfg]
+    # в аргументах только ASCII: порт и токен. Путь к конфигу с не-ASCII именем пользователя Java передаёт искажённым
+    return ['-javaagent:' + jar + '=' + f'{port}:{secrets.token_hex(16)}']
 
 
 def build_command(vchain, java_path, values, ram_gb, log_args):
