@@ -29,7 +29,7 @@ class AgentArgsTest(unittest.TestCase):
         port, token = tail.split(':', 1)
         self.assertGreater(int(port), 0)
         self.assertGreaterEqual(len(token), 32)
-        self.assertTrue(all(ord(c) < 128 for c in args[0]))
+        self.assertTrue(all(ord(c) < 128 for c in tail))  # порт и токен — только ASCII; путь к jar может быть любым
 
     def test_disabled_gives_no_agent(self):
         self.assertEqual(launch.agent_args({'friendsOverlay': False}), [])
