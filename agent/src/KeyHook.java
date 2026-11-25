@@ -23,7 +23,7 @@ final class KeyHook {
     static byte[] patch(byte[] bytes) {
         ClassFile cf = ClassFile.of();
         ClassModel model = cf.parse(bytes);
-        return cf.transform(model, ClassTransform.transformingMethods(
+        return cf.transformClass(model, ClassTransform.transformingMethods(
             mm -> mm.methodName().equalsString("keyPress"),
             MethodTransform.transformingCode(new InjectFirst())));
     }
