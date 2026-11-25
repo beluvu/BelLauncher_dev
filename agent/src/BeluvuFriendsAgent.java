@@ -36,6 +36,21 @@ public final class BeluvuFriendsAgent {
             Thread t = new Thread(() -> serve(port, token), "beluvu-friends");
             t.setDaemon(true);
             t.start();
+            inst.addTransformer(new java.lang.instrument.ClassFileTransformer() {
+                @Override
+                public byte[] transform(ClassLoader loader, String className, Class<?> redefined,
+                                        java.security.ProtectionDomain pd, byte[] buf) {
+                    if (!KeyHook.TARGET.equals(className)) return null;
+                    try {
+                        byte[] out = KeyHook.patch(buf);
+                        log("KeyboardHandler patched");
+                        return out;
+                    } catch (Throwable e) {
+                        log("patch failed: " + e);
+                        return null;
+                    }
+                }
+            }, false);
         } catch (Exception e) {
             log("failed to start: " + e);
         }
@@ -78,6 +93,20 @@ public final class BeluvuFriendsAgent {
     private static String stringField(String json, String name) {
         Matcher m = Pattern.compile("\"" + name + "\"\\s*:\\s*\"([^\"]*)\"").matcher(json);
         return m.find() ? m.group(1) : null;
+    }
+
+    /** Вызывается из KeyboardHandler.keyPress. Shift+Tab = TAB (258) с модификатором Shift (бит 1), действие PRESS = 1. */
+    public static void onKey(Object event, int action) {
+        try {
+            if (action != 1 || event == null) return;
+            int key = (Integer) event.getClass().getMethod("key").invoke(event);
+            int mods = (Integer) event.getClass().getMethod("modifiers").invoke(event);
+            if (key == 258 && (mods & 1) != 0) {
+                log("Shift+Tab pressed");
+            }
+        } catch (Throwable ignored) {
+            // никогда не ломаем обработку клавиш игры
+        }
     }
 
     private static void log(String text) {
