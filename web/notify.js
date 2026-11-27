@@ -4,7 +4,7 @@ const DMW = { unread: {}, seeded: false, timer: null };
 const DM_POLL_MS = 15000;
 
 function unreadDot(nick) {
-  return DMW.unread[nick] ? '<i class="unread-dot" title="Новое сообщение"></i>' : '';
+  return DMW.unread[nick] ? `<i class="unread-dot" title="${tr('dm_new')}"></i>` : '';
 }
 
 function unreadTotal() {
@@ -56,7 +56,7 @@ async function dmTick() {
   DMW.unread = counts;
   if (DMW.seeded && rose.length) {
     dmSound();
-    toast(rose.length === 1 ? `Новое сообщение от ${rose[0]}` : `Новые сообщения: ${rose.length} чатов`);
+    toast(rose.length === 1 ? tr('dm_new_from', rose[0]) : tr('dm_new_many', rose.length));
   }
   DMW.seeded = true;
   paintUnread();
@@ -78,11 +78,11 @@ function markPeerRead(nick) {
 
 /* ---------- промокоды ---------- */
 function promoText(d) {
-  if (d.kind === 'crystals') return `+${d.amount} кристалликов${d.title ? ' · ' + d.title : ''}`;
-  if (d.kind === 'mod') return `Мод ${d.name} добавлен в текущую установку`;
-  if (d.kind === 'resource_pack') return `Ресурспак ${d.name} добавлен в текущую установку`;
-  if (d.kind === 'modpack') return `Сборка «${d.name}» добавлена во вкладку «Установки»`;
-  return 'Промокод активирован';
+  if (d.kind === 'crystals') return `${tr('crys_plus_amount', d.amount)}${d.title ? ' · ' + d.title : ''}`;
+  if (d.kind === 'mod') return tr('promo_mod', d.name);
+  if (d.kind === 'resource_pack') return tr('promo_res', d.name);
+  if (d.kind === 'modpack') return tr('promo_modpack', d.name);
+  return tr('promo_ok');
 }
 
 /* ---------- логи ---------- */
@@ -90,18 +90,18 @@ const LOGS = { name: 'latest.log' };
 
 function logsPanelHtml() {
   return `<div class="panel" style="margin-top:14px">
-    <div class="set-row"><div class="l"><b>Логи</b><small>Последние строки лога. Их можно выделить и скопировать, например чтобы отправить в поддержку.</small></div>
+    <div class="set-row"><div class="l"><b>${tr('logs_title')}</b><small>${tr('logs_sub')}</small></div>
       <select id="logsel" class="input" style="max-width:180px">
         <option value="latest.log">latest.log</option>
         <option value="startup.log">startup.log</option>
       </select></div>
     <div class="logs-bar">
-      <button class="btn small" data-act="logs-refresh">Обновить</button>
-      <button class="btn small" data-act="logs-all">Выделить всё</button>
-      <button class="btn small primary" data-act="logs-copy">Копировать</button>
+      <button class="btn small" data-act="logs-refresh">${tr('logs_refresh')}</button>
+      <button class="btn small" data-act="logs-all">${tr('logs_select_all')}</button>
+      <button class="btn small primary" data-act="logs-copy">${tr('logs_copy')}</button>
       <span class="muted" id="logsmeta" style="font-size:12px"></span>
     </div>
-    <textarea id="logtxt" class="logbox" readonly spellcheck="false" placeholder="Лог пока пуст"></textarea>
+    <textarea id="logtxt" class="logbox" readonly spellcheck="false" placeholder="${tr('logs_empty')}"></textarea>
   </div>`;
 }
 
@@ -113,11 +113,11 @@ async function loadLogs(name) {
   const box = document.getElementById('logtxt');
   const meta = document.getElementById('logsmeta');
   if (!r || !r.ok) {
-    if (meta) meta.textContent = (r && r.error) || 'Не удалось прочитать лог';
+    if (meta) meta.textContent = trMsg(r && r.error) || tr('logs_read_fail');
     return;
   }
   if (box) { box.value = r.data.text || ''; box.scrollTop = box.scrollHeight; }
-  if (meta) meta.textContent = r.data.lines ? `${r.data.shown} из ${r.data.lines} строк` : 'Файла пока нет или он пуст';
+  if (meta) meta.textContent = r.data.lines ? tr('logs_count', r.data.shown, r.data.lines) : tr('logs_no_file');
 }
 
 async function logsAct(act) {
@@ -133,7 +133,7 @@ async function logsAct(act) {
     box.focus(); box.select();
     try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
   }
-  toast(ok ? 'Скопировано в буфер' : 'Не вышло скопировать сама, текст выделен: нажми Ctrl+C', !ok);
+  toast(ok ? tr('logs_copied') : tr('logs_copy_fail'), !ok);
 }
 
 document.addEventListener('change', (e) => {

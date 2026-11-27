@@ -5,7 +5,7 @@ function startPoll(name, fn, ms) { clearInterval(POLL[name]); POLL[name] = setIn
 const FR = { helper: [], helperState: null, tab: 'chat', q: '', players: [], peer: null, chat: [], chatLast: 0, chatSeen: new Set(), dm: [], dmLast: 0, dmSeen: new Set(), prof: null, owned: [], nfts: [], emo: false, busy: false };
 const EMOJI = ['😀', '😂', '🥹', '😎', '🤔', '😭', '😡', '👍', '👎', '🔥', '❤️', '💎', '⛏️', '🗡️', '🛡️', '🏆', '🎉', '👀', '🙏', '💀', '🤝', '🐸', '🐱', '🐷', '🟩', '⭐', '✨', '🎮'];
 const timeOf = (iso) => { try { return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
-const frErr = (r, fallback) => (r && r.error) || fallback || 'Нет связи с сервером';
+const frErr = (r, fallback) => trMsg((r && r.error) || fallback) || tr('fr_no_connection');
 
 function resetSocial() { FR.emo = false; }
 function scrollMsgs() { const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight; }
@@ -38,28 +38,28 @@ function emojiPanel(target) {
 }
 function composer(form, target, placeholder) {
   return `<form class="fr-compose" data-form="${form}">
-    <button class="btn ghost emo-btn" type="button" data-act="fr-emotoggle" title="Эмодзи">😊</button>
+    <button class="btn ghost emo-btn" type="button" data-act="fr-emotoggle" title="${tr('fr_emoji')}">😊</button>
     <input class="input" name="text" id="${target}" maxlength="300" placeholder="${placeholder}" autocomplete="off">
-    <button class="btn primary" type="submit">Отправить</button>
+    <button class="btn primary" type="submit">${tr('fr_send')}</button>
   </form>${emojiPanel(target)}`;
 }
 
 /* ---------- регистрация ---------- */
 function registerBox() {
   return `<div class="panel pad authbox">
-    <h2 style="font-size:20px">Выбери ник</h2>
-    <p class="muted" style="margin:8px 0 14px">Ник виден всем игрокам. Менять его можно раз в 30 дней.</p>
+    <h2 style="font-size:20px">${tr('fr_pick_nick')}</h2>
+    <p class="muted" style="margin:8px 0 14px">${tr('fr_nick_hint')}</p>
     <form class="form" data-form="fr-register">
-      <input class="input" name="nick" placeholder="Ник (3–16: латиница, цифры, _)" required maxlength="16">
+      <input class="input" name="nick" placeholder="${tr('fr_nick_ph')}" required maxlength="16">
       <div class="err" id="frErr" style="min-height:18px"></div>
-      <button class="btn primary" type="submit">Продолжить</button>
+      <button class="btn primary" type="submit">${tr('fr_continue')}</button>
     </form>
-    <div class="kicker" style="margin-top:18px">Уже есть аккаунт?</div>
+    <div class="kicker" style="margin-top:18px">${tr('fr_have_account')}</div>
     <form class="form" data-form="fr-login" style="margin-top:8px">
-      <input class="input" name="nick" placeholder="Ник" autocomplete="username" maxlength="16">
-      <input class="input" name="password" type="password" placeholder="Пароль" autocomplete="current-password" maxlength="64">
+      <input class="input" name="nick" placeholder="${tr('fr_nick')}" autocomplete="username" maxlength="16">
+      <input class="input" name="password" type="password" placeholder="${tr('fr_password')}" autocomplete="current-password" maxlength="64">
       <div class="err" id="frLoginErr" style="min-height:18px"></div>
-      <button class="btn" type="submit">Войти по паролю</button>
+      <button class="btn" type="submit">${tr('fr_login_pw')}</button>
     </form></div>`;
 }
 
@@ -91,15 +91,15 @@ function messengerShell() {
         <nav class="msg-rail">
           <button data-act="fr-back" title="${tr('menu')}">${MI('menu')}</button>
           <button data-act="fr-rail" data-rail="chat" title="${tr('fr_general')}">${MI('chat')}</button>
-          <button data-act="fr-rail" data-rail="profile" title="Мой профиль">${MI('person')}</button>
-          ${S.social ? `<button data-nav="news" title="Новости">${MI('bell')}</button>` : ''}
+          <button data-act="fr-rail" data-rail="profile" title="${tr('fr_my_profile')}">${MI('person')}</button>
+          ${S.social ? `<button data-nav="news" title="${tr('nav_news')}">${MI('bell')}</button>` : ''}
           <span class="spacer"></span>
-          <button data-nav="settings" title="Настройки">${MI('gear')}</button>
+          <button data-nav="settings" title="${tr('nav_settings')}">${MI('gear')}</button>
         </nav>
         <aside class="msg-list">
           <div class="msg-search">${MI('search')}<input class="input" id="frSearch" placeholder="${tr('fr_search')}" autocomplete="off" value="${esc(FR.q)}"></div>
           <button class="fr-row chat-row" data-act="fr-general"><span class="av">#</span><span>${tr('fr_general')}</span></button>
-          <button class="fr-row helper-row" data-act="fr-helper"><span class="av">✨</span><span>Помогатор</span></button>
+          <button class="fr-row helper-row" data-act="fr-helper"><span class="av">✨</span><span>${tr('fr_helper')}</span></button>
           <div class="msg-sect">${tr('fr_players')} <span class="muted" id="frCount"></span></div>
           <div class="fr-list" id="frList"></div>
         </aside>
@@ -129,20 +129,20 @@ function splitPack(text) {
         .map((x) => x.trim().toLowerCase())
         .filter((x) => /^[a-z0-9][a-z0-9_.-]{1,63}$/.test(x))
         .slice(0, 30);
-      if (mods.length) pack = { name: String(d.name || 'Сборка').slice(0, 60), mods };
+      if (mods.length) pack = { name: String(d.name || tr('app_pack')).slice(0, 60), mods };
     } catch (e) { /* битый блок: показываем только текст */ }
   }
   return { text: src.replace(PACK_RE, '').trim(), pack };
 }
 function helperMsgHtml(m) {
   if (m.role === 'user') return `<div class="msg mine"><div class="who">${esc(S.acc ? S.acc.nick : '')}</div><div class="txt">${esc(m.body)}</div></div>`;
-  const pack = m.pack ? `<div class="helper-pack"><b>${esc(m.pack.name)}</b><small>${m.pack.mods.length} модов: ${esc(m.pack.mods.join(', '))}</small><button class="btn small primary" type="button" data-act="fr-helper-install" data-mods="${esc(JSON.stringify(m.pack.mods))}">Установить моды</button></div>` : '';
-  return `<div class="msg"><div class="who">Помогатор</div><div class="txt">${esc(m.body)}${pack}</div></div>`;
+  const pack = m.pack ? `<div class="helper-pack"><b>${esc(m.pack.name)}</b><small>${m.pack.mods.length} ${tr('app_mods_count')}: ${esc(m.pack.mods.join(', '))}</small><button class="btn small primary" type="button" data-act="fr-helper-install" data-mods="${esc(JSON.stringify(m.pack.mods))}">${tr('fr_install_mods')}</button></div>` : '';
+  return `<div class="msg"><div class="who">${tr('fr_helper')}</div><div class="txt">${esc(m.body)}${pack}</div></div>`;
 }
 function paintHelper(body) {
   // Помогатор временно отключён: API-ключ пока не решён (см. Beta-плашку)
-  body.innerHTML = `<div class="chat-head"><b>Помогатор</b><span class="muted helper-info">Beta</span></div>
-    <div class="helper-beta">(Beta) бот не поддерживается. ИИ-помощник временно отключён, пока решаем вопрос с API-ключами.</div>
+  body.innerHTML = `<div class="chat-head"><b>${tr('fr_helper')}</b><span class="muted helper-info">Beta</span></div>
+    <div class="helper-beta">${tr('fr_helper_beta')}</div>
     <div class="msgs" id="msgs">${FR.helper.map(helperMsgHtml).join('')}</div>`;
   scrollMsgs();
 }
@@ -160,18 +160,18 @@ async function loadHelper() {
 }
 async function buyHelper() {
   const r = await api.helper.buy();
-  if (!r || !r.ok || !r.data || r.data.ok === false) return toast(frErr(r, 'Не получилось купить'), true);
+  if (!r || !r.ok || !r.data || r.data.ok === false) return toast(frErr(r, tr('fr_buy_fail')), true);
   FR.helperState = r.data;
-  toast('Докуплено: +100 запросов');
+  toast(tr('fr_bought'));
   paintTab();
 }
 async function installHelper(raw) {
   let mods = [];
-  try { mods = JSON.parse(raw || '[]'); } catch (e) { return toast('Список модов повреждён', true); }
+  try { mods = JSON.parse(raw || '[]'); } catch (e) { return toast(tr('fr_mods_broken'), true); }
   const r = await api.helper.install(mods);
   if (!r || !r.ok || !r.data) return toast(frErr(r), true);
   const ok = r.data.installed.length; const bad = r.data.failed.length;
-  toast(`Установлено модов в текущую установку: ${ok}${bad ? `, не удалось: ${bad}` : ''}`, ok === 0);
+  toast(`${tr('fr_mods_installed', ok)}${bad ? tr('fr_failed_n', bad) : ''}`, ok === 0);
 }
 
 /* ---------- вкладка ---------- */
@@ -187,7 +187,7 @@ function paintPlayers() {
   const q = FR.q.trim().toLowerCase();
   const list = q ? FR.players.filter((p) => p.nick.toLowerCase().includes(q)) : FR.players;
   box.innerHTML = list.map((p) => `<button class="fr-row ${FR.peer === p.nick ? 'on' : ''} ${p.me ? 'me' : ''}" data-act="fr-peer" data-nick="${esc(p.nick)}">
-      <span class="av">${avatarInner(p.avatar, p.nick)}<i class="dot ${p.online ? 'on' : ''}"></i></span><span>${unreadDot(p.nick)}${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}${p.me ? ' <small class="muted">(ты)</small>' : ''}${p.where ? `<small class="muted" style="display:block">${esc(p.where)}</small>` : ''}</span></button>`).join('')
+      <span class="av">${avatarInner(p.avatar, p.nick)}<i class="dot ${p.online ? 'on' : ''}"></i></span><span>${unreadDot(p.nick)}${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}${p.me ? `<small class="muted"> (${tr('fr_you')})</small>` : ''}${p.where ? `<small class="muted" style="display:block">${esc(p.where)}</small>` : ''}</span></button>`).join('')
     || `<div class="empty">${q ? tr('fr_notfound') : tr('fr_nobody')}</div>`;
 }
 function paintTab() {
@@ -195,12 +195,12 @@ function paintTab() {
   paintRail();
   if (FR.tab === 'chat') {
     body.innerHTML = `<div class="chat-head"><b>${tr('fr_general')}</b></div>
-      <div class="msgs" id="msgs">${FR.chat.map(msgHtml).join('') || '<div class="empty">Сообщений пока нет.</div>'}</div>${composer('fr-chat', 'frChatIn', 'Сообщение в общий чат')}`;
+      <div class="msgs" id="msgs">${FR.chat.map(msgHtml).join('') || `<div class="empty">${tr('fr_no_messages')}</div>`}</div>${composer('fr-chat', 'frChatIn', tr('fr_chat_ph'))}`;
     scrollMsgs();
   } else if (FR.tab === 'dm') {
-    if (!FR.peer) { body.innerHTML = '<div class="empty">Выбери игрока в списке.</div>'; return; }
-    body.innerHTML = `<div class="chat-head"><b>${esc(FR.peer)}</b><span style="flex:1"></span><button class="btn small" data-act="fr-profile" data-nick="${esc(FR.peer)}">Профиль</button></div>
-      <div class="msgs" id="msgs">${FR.dm.map(msgHtml).join('') || '<div class="empty">Пока нет сообщений.</div>'}</div>${composer('fr-dm', 'frDmIn', 'Личное сообщение')}`;
+    if (!FR.peer) { body.innerHTML = `<div class="empty">${tr('fr_pick_player')}</div>`; return; }
+    body.innerHTML = `<div class="chat-head"><b>${esc(FR.peer)}</b><span style="flex:1"></span><button class="btn small" data-act="fr-profile" data-nick="${esc(FR.peer)}">${tr('fr_profile')}</button></div>
+      <div class="msgs" id="msgs">${FR.dm.map(msgHtml).join('') || `<div class="empty">${tr('fr_no_dm')}</div>`}</div>${composer('fr-dm', 'frDmIn', tr('fr_dm_ph'))}`;
     scrollMsgs();
   } else if (FR.tab === 'helper') {
     paintHelper(body);
@@ -219,7 +219,7 @@ function avatarInner(av, nick) {
   return esc(String(nick || '?').slice(0, 1).toUpperCase());
 }
 async function renderOwnProfile(body) {
-  body.innerHTML = '<div class="empty">Загружаю…</div>';
+  body.innerHTML = `<div class="empty">${tr('app_loading')}</div>`;
   const [st, me, prof, bl] = await Promise.all([
     api.coins.state().catch(() => null),
     api.social.me().catch(() => null),
@@ -236,47 +236,47 @@ async function renderOwnProfile(body) {
   if (build.support) { body.innerHTML = supportProfileHtml(p, gifts); return; }
   body.innerHTML = `<div class="prof">
     <div class="prof-head"><div class="prof-av">${avatarInner(p.avatar, S.acc.nick)}</div>
-      <div><div class="kicker">Ник</div><div class="prof-nick">${nickHtml(S.acc.nick, p.prefix, p.prefixColor, p.badges)}</div></div></div>
+      <div><div class="kicker">${tr('fr_nick')}</div><div class="prof-nick">${nickHtml(S.acc.nick, p.prefix, p.prefixColor, p.badges)}</div></div></div>
     <form class="fr-nickform" data-form="fr-nick">
-      <input class="input" name="text" maxlength="16" placeholder="Новый ник" autocomplete="off">
-      <button class="btn" type="submit">Сменить ник</button>
+      <input class="input" name="text" maxlength="16" placeholder="${tr('fr_new_nick')}" autocomplete="off">
+      <button class="btn" type="submit">${tr('fr_change_nick')}</button>
     </form>
-    <div class="muted fr-hint">Ник меняется раз в 30 дней.</div>
-    <div class="kicker" style="margin-top:14px">Пароль для входа на другом ПК</div>
+    <div class="muted fr-hint">${tr('fr_nick_change_hint')}</div>
+    <div class="kicker" style="margin-top:14px">${tr('fr_pw_other_pc')}</div>
     <form class="fr-nickform" data-form="fr-password">
-      <input class="input" name="text" type="password" minlength="6" maxlength="64" placeholder="Новый пароль (от 6 символов)" autocomplete="new-password">
-      <button class="btn" type="submit">Сохранить пароль</button>
+      <input class="input" name="text" type="password" minlength="6" maxlength="64" placeholder="${tr('fr_new_pw')}" autocomplete="new-password">
+      <button class="btn" type="submit">${tr('fr_save_pw')}</button>
     </form>
-    <div class="muted fr-hint">Нужен, чтобы войти в этот аккаунт на другом компьютере. Без пароля вход с другого ПК невозможен.</div>
-    <div class="kicker" style="margin-top:14px">Описание (до 140 символов)</div>
-    <textarea class="input" id="frBio" maxlength="140" rows="3" placeholder="Описание">${esc((me && me.ok && me.data.bio) || '')}</textarea>
-    <div class="kicker" style="margin-top:14px">Мои подарки (NFT): ${gifts.length}</div>
-    <div class="gift-grid">${gifts.length ? gifts.map(giftHtml).join('') : '<div class="empty">Подарков пока нет</div>'}</div>
+    <div class="muted fr-hint">${tr('fr_pw_hint')}</div>
+    <div class="kicker" style="margin-top:14px">${tr('fr_bio_label')}</div>
+    <textarea class="input" id="frBio" maxlength="140" rows="3" placeholder="${tr('fr_bio')}">${esc((me && me.ok && me.data.bio) || '')}</textarea>
+    <div class="kicker" style="margin-top:14px">${tr('fr_my_gifts')} (NFT): ${gifts.length}</div>
+    <div class="gift-grid">${gifts.length ? gifts.map(giftHtml).join('') : `<div class="empty">${tr('fr_no_gifts')}</div>`}</div>
     <div class="err" id="frErr" style="min-height:18px"></div>
-    <button class="btn primary" data-act="fr-save-profile">Сохранить описание</button>
-    <div class="kicker" style="margin-top:18px">Аватарка</div>
+    <button class="btn primary" data-act="fr-save-profile">${tr('fr_save_bio')}</button>
+    <div class="kicker" style="margin-top:18px">${tr('fr_avatar')}</div>
     <div class="fr-nft">
-      <label class="nft-pick"><input type="radio" name="avatar" value="letter" ${p.avatar === 'letter' ? 'checked' : ''}><span class="av-letter">${esc(S.acc.nick.slice(0, 1).toUpperCase())}</span><span>Буква</span></label>
+      <label class="nft-pick"><input type="radio" name="avatar" value="letter" ${p.avatar === 'letter' ? 'checked' : ''}><span class="av-letter">${esc(S.acc.nick.slice(0, 1).toUpperCase())}</span><span>${tr('fr_letter')}</span></label>
       ${EMOJI.map((e) => `<label class="nft-pick nft-emo"><input type="radio" name="avatar" value="emoji:${e}" ${p.avatar === 'emoji:' + e ? 'checked' : ''}><span class="av-letter">${e}</span></label>`).join('')}
     </div>
-    <div class="kicker" style="margin-top:18px">Предметы</div>
-    <label class="check-row"><input type="checkbox" id="frShowAll" ${p.showAllItems !== false ? 'checked' : ''}> Показывать все мои предметы</label>
-    <div class="fr-nft" id="frItemPick" ${p.showAllItems !== false ? 'hidden' : ''}>${others.length ? others.map((id) => `<label class="nft-pick"><input type="checkbox" name="item" value="${esc(id)}" ${shownItems.has(id) ? 'checked' : ''}><span>${esc(id.split(':')[1] || id)}</span></label>`).join('') : '<div class="muted">Предметов нет</div>'}</div>
-    <button class="btn primary" style="margin-top:12px" data-act="fr-save-appearance">Сохранить аватарку и предметы</button>
+    <div class="kicker" style="margin-top:18px">${tr('fr_items')}</div>
+    <label class="check-row"><input type="checkbox" id="frShowAll" ${p.showAllItems !== false ? 'checked' : ''}> ${tr('fr_show_all')}</label>
+    <div class="fr-nft" id="frItemPick" ${p.showAllItems !== false ? 'hidden' : ''}>${others.length ? others.map((id) => `<label class="nft-pick"><input type="checkbox" name="item" value="${esc(id)}" ${shownItems.has(id) ? 'checked' : ''}><span>${esc(id.split(':')[1] || id)}</span></label>`).join('') : `<div class="muted">${tr('fr_no_items')}</div>`}</div>
+    <button class="btn primary" style="margin-top:12px" data-act="fr-save-appearance">${tr('fr_save_appearance')}</button>
   </div>`;
 }
 // Профиль аккаунта поддержки: только шапка и подарки, менять здесь нечего
 function supportProfileHtml(p, gifts) {
   return `<div class="prof">
     <div class="prof-head"><div class="prof-av">${avatarInner(p.avatar, p.nick)}</div>
-      <div><div class="kicker">Аккаунт поддержки</div><div class="prof-nick">${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}</div></div></div>
-    <div class="muted fr-hint">Ник, аватарка и описание этого аккаунта меняются только администрацией.</div>
-    <div class="kicker" style="margin-top:14px">Подарки (NFT): ${gifts.length}</div>
-    <div class="gift-grid">${gifts.length ? gifts.map(giftHtml).join('') : '<div class="empty">Подарков пока нет</div>'}</div>
+      <div><div class="kicker">${tr('fr_support_account')}</div><div class="prof-nick">${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}</div></div></div>
+    <div class="muted fr-hint">${tr('fr_support_hint')}</div>
+    <div class="kicker" style="margin-top:14px">${tr('fr_gifts')} (NFT): ${gifts.length}</div>
+    <div class="gift-grid">${gifts.length ? gifts.map(giftHtml).join('') : `<div class="empty">${tr('fr_no_gifts')}</div>`}</div>
   </div>`;
 }
 // Профиль другого игрока в стиле Telegram: шапка, статус, строки, вкладки «Подарки» и «Предметы»
-const PROF_TABS = [['gifts', 'Подарки'], ['items', 'Предметы']];
+const profTabs = () => [['gifts', tr('fr_gifts')], ['items', tr('fr_items')]];
 function itemPic(kind, id) {
   if (kind === 'nft') return `assets/nft/${esc(id)}.png`;
   if (kind === 'cloak') return CLOAK_PREVIEW(id);
@@ -288,8 +288,8 @@ function tileHtml(src, name, sub) {
     + `<div class="gift-name">${esc(name)}</div>${sub ? `<div class="gift-sub">${esc(sub)}</div>` : ''}</div>`;
 }
 // подарок-NFT: фон + фигурка (вариант), подпись — фон и цена
-const TIER_NAME = { common: 'обычный', rare: 'редкий', epic: 'эпический' };
-const money = (n) => Number(n || 0).toLocaleString('ru-RU') + ' кр.';
+const tierName = () => ({ common: tr('tier_common'), rare: tr('tier_rare'), epic: tr('tier_epic') });
+const money = (n) => Number(n || 0).toLocaleString(locale()) + ' ' + tr('crys_short_cr');
 function nftArt(g) {
   return `<div class="nft-art"><img class="nft-bg" src="assets/nft/${esc(g.bg)}.png" alt="" data-hide-err>`
     + `<img class="nft-fig" src="assets/nft/fig/${esc(g.family)}-v${Number(g.variant) || 1}.png" alt="" data-hide-err></div>`;
@@ -300,28 +300,28 @@ function giftHtml(g) {
 }
 function profileHtml(p) {
   const tab = FR.pTab || 'gifts';
-  const seen = p.online ? 'в сети' : (p.lastSeen
-    ? 'был(а) ' + new Date(p.lastSeen).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-    : 'не в сети');
+  const seen = p.online ? tr('fr_online_word') : (p.lastSeen
+    ? tr('fr_was') + new Date(p.lastSeen).toLocaleString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : tr('fr_offline_word'));
   const gifts = (p.gifts || []).map(giftHtml);
   const items = (p.items || []).filter((i) => i.kind !== 'nft')
-    .map((i) => tileHtml(itemPic(i.kind, i.id.split(':')[1]), i.name, i.kind === 'cloak' ? 'плащ' : 'тема'));
+    .map((i) => tileHtml(itemPic(i.kind, i.id.split(':')[1]), i.name, i.kind === 'cloak' ? tr('fr_cloak_lc') : tr('fr_theme_lc')));
   const counts = { gifts: gifts.length, items: items.length };
   const list = tab === 'gifts' ? gifts : items;
   return `<div class="tgp">
-    <button class="tgp-back" data-act="fr-pback" title="Назад">&larr;</button>
+    <button class="tgp-back" data-act="fr-pback" title="${tr('app_back')}">&larr;</button>
     <div class="tgp-cover"></div>
     <div class="tgp-av">${avatarInner(p.avatar, p.nick)}</div>
     <div class="tgp-name">${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}</div>
     <div class="tgp-status"><span class="dot ${p.online ? 'on' : ''}"></span> ${esc(seen)}</div>
     <div class="tgp-rows">
-      <div class="tgp-row"><div class="tgp-k">${esc(p.nick)}</div><div class="tgp-l">Имя пользователя</div></div>
-      <div class="tgp-row"><div class="tgp-k">${esc(p.bio || '—')}</div><div class="tgp-l">О себе</div></div>
+      <div class="tgp-row"><div class="tgp-k">${esc(p.nick)}</div><div class="tgp-l">${tr('fr_username')}</div></div>
+      <div class="tgp-row"><div class="tgp-k">${esc(p.bio || '—')}</div><div class="tgp-l">${tr('fr_about_me')}</div></div>
     </div>
-    <div class="tgp-tabs">${PROF_TABS.map(([id, label]) =>
+    <div class="tgp-tabs">${profTabs().map(([id, label]) =>
       `<button class="tgp-tab ${tab === id ? 'on' : ''}" data-act="fr-ptab" data-t="${id}">${label} · ${counts[id]}</button>`).join('')}</div>
-    <div class="gift-grid">${list.join('') || '<div class="empty">Пока пусто</div>'}</div>
-    <button class="btn primary tgp-write" data-act="fr-write" data-nick="${esc(p.nick)}">Написать</button>
+    <div class="gift-grid">${list.join('') || `<div class="empty">${tr('fr_empty')}</div>`}</div>
+    <button class="btn primary tgp-write" data-act="fr-write" data-nick="${esc(p.nick)}">${tr('fr_write')}</button>
   </div>`;
 }
 // превью NFT: картинка, владелец, модель, фон, цена, сколько выпущено; ссылка и отправка
@@ -329,7 +329,7 @@ function closeNft() { const el = document.getElementById('nftModal'); if (el) el
 async function openNft(id) {
   if (!id) return;
   const r = await api.social.nftInfo(Number(id)).catch(() => null);
-  if (!r || !r.ok) return toast(frErr(r) || 'NFT не найден', true);
+  if (!r || !r.ok) return toast(frErr(r) || tr('fr_nft_not_found'), true);
   showNft(r.data);
 }
 function showNft(g) {
@@ -341,21 +341,21 @@ function showNft(g) {
   el.innerHTML = `<div class="nft-box">
     ${nftArt(g)}
     <div class="nft-title">${esc(g.name)}</div>
-    <div class="nft-sub">Коллекционный подарок #${Number(g.id)}</div>
+    <div class="nft-sub">${tr('fr_collectible')} #${Number(g.id)}</div>
     <div class="nft-rows">
-      <div><span>Владелец</span><b>${esc(g.owner || '—')}</b></div>
-      <div><span>Модель</span><b>${esc(g.name)} · вариант ${Number(g.variant)}</b></div>
-      <div><span>Фон</span><b>${esc(g.bgName || '')} (${esc(TIER_NAME[g.tier] || g.tier || '')})</b></div>
-      <div><span>Цена</span><b>${money(g.value)}</b></div>
-      <div><span>Выпущено</span><b>${Number(g.minted) || 0} шт.</b></div>
+      <div><span>${tr('fr_owner')}</span><b>${esc(g.owner || '—')}</b></div>
+      <div><span>${tr('fr_model')}</span><b>${esc(g.name)} · ${tr('fr_variant')} ${Number(g.variant)}</b></div>
+      <div><span>${tr('fr_background')}</span><b>${esc(g.bgName || '')} (${esc(tierName()[g.tier] || g.tier || '')})</b></div>
+      <div><span>${tr('fr_price')}</span><b>${money(g.value)}</b></div>
+      <div><span>${tr('fr_minted')}</span><b>${Number(g.minted) || 0} ${tr('fr_pcs')}</b></div>
     </div>
     <div class="nft-actions">
-      <button class="btn" data-act="fr-nft-link" data-id="${Number(g.id)}">Ссылка</button>
-      <button class="btn" data-act="fr-nft-close">Закрыть</button>
+      <button class="btn" data-act="fr-nft-link" data-id="${Number(g.id)}">${tr('fr_link')}</button>
+      <button class="btn" data-act="fr-nft-close">${tr('app_close')}</button>
     </div>
     ${mine ? `<form class="nft-send" data-form="fr-nft-send" data-id="${Number(g.id)}">
-      <input class="input" name="text" maxlength="16" placeholder="Ник получателя" autocomplete="off">
-      <button class="btn primary" type="submit">Отправить</button>
+      <input class="input" name="text" maxlength="16" placeholder="${tr('fr_recipient_ph')}" autocomplete="off">
+      <button class="btn primary" type="submit">${tr('fr_send')}</button>
     </form>` : ''}
     <div class="err" id="nftErr" style="min-height:18px"></div>
   </div>`;
@@ -364,26 +364,26 @@ function showNft(g) {
 }
 async function copyNftLink(id) {
   const link = `nft:${Number(id)}`;
-  try { await navigator.clipboard.writeText(link); toast('Ссылка скопирована: ' + link); }
-  catch { toast('Не получилось скопировать', true); }
+  try { await navigator.clipboard.writeText(link); toast(tr('fr_link_copied') + ': ' + link); }
+  catch { toast(tr('fr_copy_fail'), true); }
 }
 // отправка подарка: владелец передаёт NFT, получателю уходит личное сообщение со ссылкой
 async function sendNft(f) {
   const id = Number(f.dataset.id);
   const to = (f.text.value || '').trim();
   const err = $('#nftErr');
-  if (!to) { if (err) err.textContent = 'Укажите ник получателя'; return; }
+  if (!to) { if (err) err.textContent = tr('fr_enter_recipient'); return; }
   const r = await api.social.nftSend(id, to).catch(() => null);
   if (!r || !r.ok) { if (err) err.textContent = frErr(r); return; }
   await api.social.dmSend(to, `nft:${id}`).catch(() => null);
-  toast(`NFT #${id} отправлен игроку ${to}`);
+  toast(tr('fr_nft_sent', id, to));
   closeNft();
 }
 async function renderOtherProfile(body, nick) {
-  body.innerHTML = '<div class="empty">Загружаю…</div>';
+  body.innerHTML = `<div class="empty">${tr('app_loading')}</div>`;
   const r = await api.social.profile(nick).catch(() => null);
   if (FR.tab !== 'profile' || FR.viewNick !== nick) return;
-  if (!r || !r.ok) { body.innerHTML = `<div class="empty">${esc(frErr(r) || 'Профиль не найден')}</div>`; return; }
+  if (!r || !r.ok) { body.innerHTML = `<div class="empty">${esc(frErr(r) || tr('fr_profile_not_found'))}</div>`; return; }
   FR.viewData = r.data;
   body.innerHTML = profileHtml(r.data);
 }
@@ -463,8 +463,8 @@ function enterView(view) {
 
 /* ---------- настройки ---------- */
 function accountRow() {
-  if (S.acc) return `<div class="set-row"><div class="l"><b>Аккаунт</b><small>Ник в лаунчере: ${esc(S.acc.nick)}</small></div><div class="field"><button class="btn" data-nav="friends">Друзья</button></div></div>`;
-  return `<div class="set-row"><div class="l"><b>Аккаунт</b><small>Ник ещё не выбран</small></div><div class="field"><button class="btn" data-nav="friends">Выбрать ник</button></div></div>`;
+  if (S.acc) return `<div class="set-row"><div class="l"><b>${tr('fr_account')}</b><small>${tr('fr_nick_in_launcher')}: ${esc(S.acc.nick)}</small></div><div class="field"><button class="btn" data-nav="friends">${tr('nav_friends')}</button></div></div>`;
+  return `<div class="set-row"><div class="l"><b>${tr('fr_account')}</b><small>${tr('fr_nick_not_set')}</small></div><div class="field"><button class="btn" data-nav="friends">${tr('fr_pick_nick_btn')}</button></div></div>`;
 }
 
 /* ---------- действия ---------- */
@@ -483,7 +483,7 @@ document.addEventListener('submit', async (e) => {
       r = await api.social.register(nick);
       if (!r || !r.ok) { const err = $('#frErr'); if (err) err.textContent = frErr(r); return; }
       S.acc = { nick: r.data.nick || nick };
-      toast('Добро пожаловать, ' + S.acc.nick);
+      toast(tr('fr_welcome', S.acc.nick));
       go('friends');
       return;
     }
@@ -493,20 +493,20 @@ document.addEventListener('submit', async (e) => {
       r = await api.social.login(nick, password);
       if (!r || !r.ok || r.data.ok === false) {
         const err = $('#frLoginErr');
-        if (err) err.textContent = (r && r.data && r.data.error) || frErr(r);
+        if (err) err.textContent = trMsg(r && r.data && r.data.error) || frErr(r);
         return;
       }
       S.acc = { nick: r.data.nick || nick };
-      toast('Вход выполнен: ' + S.acc.nick);
+      toast(tr('fr_logged_in', S.acc.nick));
       go('friends');
       return;
     }
     if (kind === 'fr-password') {
       const password = f.text.value;
       r = await api.social.passwordSet(password);
-      if (!r || !r.ok || r.data.ok === false) return toast((r && r.data && r.data.error) || frErr(r), true);
+      if (!r || !r.ok || r.data.ok === false) return toast(trMsg(r && r.data && r.data.error) || frErr(r), true);
       f.text.value = '';
-      toast('Пароль сохранён');
+      toast(tr('fr_pw_saved'));
       return;
     }
     if (kind === 'fr-nick') {
@@ -514,12 +514,12 @@ document.addEventListener('submit', async (e) => {
       r = await api.social.nickChange(nick);
       if (!r || !r.ok) return toast(frErr(r), true);
       S.acc = { ...S.acc, nick: r.data.nick || nick };
-      toast('Ник изменён: ' + S.acc.nick);
+      toast(tr('fr_nick_changed', S.acc.nick));
       shell(); go('friends');
       return;
     }
     if (kind === 'fr-helper') {
-      return toast('(Beta) бот не поддерживается, сейчас он отключён', true);
+      return toast(tr('fr_helper_disabled'), true);
       const q = f.text.value.trim();
       if (!q) return;
       f.text.value = '';
@@ -530,7 +530,7 @@ document.addEventListener('submit', async (e) => {
         FR.helper.pop();
         f.text.value = q;
         paintTab();
-        return toast((r && r.data && r.data.error) || frErr(r), true);
+        return toast(trMsg(r && r.data && r.data.error) || frErr(r), true);
       }
       const p = splitPack(r.data.reply);
       FR.helper.push({ role: 'assistant', body: p.text, pack: p.pack });
@@ -588,7 +588,7 @@ document.addEventListener('click', async (e) => {
     const all = !!(document.getElementById('frShowAll') || {}).checked;
     const r = await api.social.appearanceSet(avatar, items, all);
     if (!r || !r.ok) return toast(frErr(r), true);
-    toast('Аватарка и предметы сохранены');
+    toast(tr('fr_appearance_saved'));
     return;
   }
   if (act === 'fr-save-profile') {
@@ -596,7 +596,7 @@ document.addEventListener('click', async (e) => {
     const bio = $('#frBio').value;
     const r = await api.social.profileSet(bio, show);
     if (!r || !r.ok) { const err = $('#frErr'); if (err) err.textContent = frErr(r); return; }
-    toast('Профиль сохранён');
+    toast(tr('fr_profile_saved'));
     return;
   }
   if (act === 'fr-back') { return go('home'); }
@@ -611,7 +611,7 @@ document.addEventListener('click', async (e) => {
     const root = document.querySelector('.msg-app'); if (!root) return;
     const on = !root.classList.contains('compact');
     root.classList.toggle('compact', on); msgSetPref('size', on ? 'compact' : 'full');
-    a.textContent = on ? '⤢' : '⤡'; a.title = on ? 'На весь экран' : 'Маленькое окно';
+    a.textContent = on ? '⤢' : '⤡'; a.title = on ? tr('msg_full') : tr('msg_small');
     return;
   }
   if (act === 'fr-helper') { FR.tab = 'helper'; FR.peer = null; FR.viewNick = null; paintPlayers(); paintTab(); return loadHelper(); }
@@ -630,12 +630,12 @@ document.addEventListener('click', async (e) => {
 
 /* ---------- новости ---------- */
 async function renderNews() {
-  content().innerHTML = '<div class="news"><div class="news-head"><b>Новости</b></div><div id="newsList"><div class="empty">Загружаю…</div></div></div>';
+  content().innerHTML = `<div class="news"><div class="news-head"><b>${tr('nav_news')}</b></div><div id="newsList"><div class="empty">${tr('app_loading')}</div></div></div>`;
   const r = await api.social.news();
   const box = $('#newsList'); if (!box) return;
   if (!r || !r.ok) { box.innerHTML = `<div class="empty">${esc(frErr(r))}</div>`; return; }
   box.innerHTML = r.data.map((n) => `<article class="panel pad news-item">
       <div class="muted news-date">${esc(String(n.created_at || '').slice(0, 16).replace('T', ' '))}</div>
       <h3>${esc(n.title)}</h3><div class="news-body">${esc(n.body)}</div></article>`).join('')
-    || '<div class="empty">Новостей пока нет</div>';
+    || `<div class="empty">${tr('news_empty')}</div>`;
 }

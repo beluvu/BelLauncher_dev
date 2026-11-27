@@ -14,26 +14,26 @@ function renderNewInstall() {
   if (!n.ver && S.vers.latest) n.ver = S.vers.latest;
   content().innerHTML = `
     <div class="ni-wrap">
-      <div class="ni-head"><button class="btn icon" data-nav="home" title="Назад">←</button><h2>Новая установка</h2></div>
+      <div class="ni-head"><button class="btn icon" data-nav="home" title="${tr('app_back')}">←</button><h2>${tr('app_new_install')}</h2></div>
       <div class="ni-tabs">
-        <button class="ni-tab ${n.tab === 'own' ? 'on' : ''}" data-ni-tab="own">+ Своя</button>
-        <button class="ni-tab" data-ni-tab="pack">Модпак</button>
+        <button class="ni-tab ${n.tab === 'own' ? 'on' : ''}" data-ni-tab="own">${tr('ni_own')}</button>
+        <button class="ni-tab" data-ni-tab="pack">${tr('ni_pack')}</button>
       </div>
       <div class="panel ni-form">
-        <label class="cap" for="niName">Название</label>
-        <input class="input" id="niName" placeholder="Моя установка" maxlength="40" value="${esc(n.name)}">
-        <div class="ni-row"><span class="cap">Версия Minecraft</span>
-          <label class="ni-snap"><input type="checkbox" data-ni-snap ${n.snap ? 'checked' : ''}> Снапшоты</label></div>
-        <select class="input" id="niVer">${list.length ? '' : '<option value="">Выберите версию</option>'}${list.map((v) => `<option value="${esc(v.id)}" ${n.ver === v.id ? 'selected' : ''}>${esc(v.id)}</option>`).join('')}</select>
-        <span class="cap">Тип игры</span>
+        <label class="cap" for="niName">${tr('ni_name_label')}</label>
+        <input class="input" id="niName" placeholder="${tr('ni_default_name')}" maxlength="40" value="${esc(n.name)}">
+        <div class="ni-row"><span class="cap">${tr('ni_version')}</span>
+          <label class="ni-snap"><input type="checkbox" data-ni-snap ${n.snap ? 'checked' : ''}> ${tr('ni_snapshots')}</label></div>
+        <select class="input" id="niVer">${list.length ? '' : `<option value="">${tr('ni_pick_version')}</option>`}${list.map((v) => `<option value="${esc(v.id)}" ${n.ver === v.id ? 'selected' : ''}>${esc(v.id)}</option>`).join('')}</select>
+        <span class="cap">${tr('ni_game_type')}</span>
         <div class="ni-seg">${NI_LOADERS.map(([k, l]) => `<button class="${n.loader === k ? 'on' : ''}" data-ni-loader="${k}">${l}</button>`).join('')}</div>
-        <span class="cap">Тип папки</span>
+        <span class="cap">${tr('ni_folder_type')}</span>
         <div class="ni-seg">
-          <button class="${n.folder === 'isolated' ? 'on' : ''}" data-ni-folder="isolated" title="Свои моды и сохранения только у этой установки">Изолированная</button>
-          <button class="${n.folder === 'shared' ? 'on' : ''}" data-ni-folder="shared" title="Моды и сохранения общие с другими установками той же версии и загрузчика">Общая</button>
+          <button class="${n.folder === 'isolated' ? 'on' : ''}" data-ni-folder="isolated" title="${tr('ni_isolated_hint')}">${tr('ni_isolated')}</button>
+          <button class="${n.folder === 'shared' ? 'on' : ''}" data-ni-folder="shared" title="${tr('ni_shared_hint')}">${tr('ni_shared')}</button>
         </div>
         ${n.error ? `<div class="err">${esc(n.error)}</div>` : ''}
-        <div class="ni-foot"><button class="btn primary" data-ni-create>Создать</button></div>
+        <div class="ni-foot"><button class="btn primary" data-ni-create>${tr('ni_create')}</button></div>
       </div>
     </div>`;
 }
@@ -47,13 +47,13 @@ async function niCreate() {
   const n = NI();
   n.error = '';
   const r = await safe(api.installs.create({ name: n.name, version: n.ver, loader: n.loader, folder: n.folder }));
-  if (!r || !r.ok) { n.error = (r && r.error) || 'Не получилось создать установку'; renderNewInstall(); return; }
+  if (!r || !r.ok) { n.error = trMsg(r && r.error) || tr('ni_create_fail'); renderNewInstall(); return; }
   n.name = ''; n.error = '';
   await reloadInstalls();
   const sel = await safe(api.installs.select('inst:' + r.data.id));
   if (sel && sel.error) toast(sel.error, true);
   if (sel && !sel.error) S.st = sel;
-  toast('Установка создана: ' + r.data.name);
+  toast(tr('ni_created', r.data.name));
   go('home');
 }
 
@@ -69,10 +69,10 @@ function openInstMenu(btn, key) {
   const ui = INST(); ui.menu = key; ui.confirm = wasSure ? key : null;
   const r = btn.getBoundingClientRect();
   const items = [];
-  if (x.kind === 'custom') items.push(['im-edit', 'Редактировать'], ['im-dup', 'Дублировать']);
-  items.push(['im-open', 'Открыть папку']);
+  if (x.kind === 'custom') items.push(['im-edit', tr('im_edit')], ['im-dup', tr('im_dup')]);
+  items.push(['im-open', tr('im_open_folder')]);
   if (x.kind === 'custom' || x.kind === 'pack') {
-    items.push(['im-del', ui.confirm === key ? 'Точно удалить?' : 'Удалить', true]);
+    items.push(['im-del', ui.confirm === key ? tr('im_sure_delete') : tr('app_delete'), true]);
   }
   const m = document.createElement('div');
   m.id = 'instMenu'; m.className = 'inst-menu';
@@ -88,7 +88,7 @@ function openInstMenu(btn, key) {
 async function openInstEdit(key) {
   const x = S.installs.find((i) => i.key === key); if (!x || x.kind !== 'custom') return;
   const r = await safe(api.installs.get(x.id));
-  if (!r || !r.ok) return toast((r && r.error) || 'Не получилось открыть', true);
+  if (!r || !r.ok) return toast(trMsg(r && r.error) || tr('im_open_fail'), true);
   const rec = r.data;
   INST().edit = { id: rec.id, name: rec.name, version: rec.version, loader: rec.loader, ramGb: rec.ramGb || null, jvmArgs: rec.jvmArgs || '', javaPath: rec.javaPath || '' };
   INST().editErr = '';
@@ -98,37 +98,37 @@ async function openInstEdit(key) {
 function paintInstEdit() {
   const e = INST().edit; if (!e) return;
   const list = (S.vers.list || []).filter((v) => v.type === 'release' || v.id === e.version);
-  const ram = e.ramGb ? `${e.ramGb} ГБ` : 'глобально';
+  const ram = e.ramGb ? `${e.ramGb} ${tr('app_gb')}` : tr('ni_global');
   let box = document.getElementById('instModal');
   if (!box) { box = document.createElement('div'); box.id = 'instModal'; box.className = 'inst-modal'; document.body.appendChild(box); }
   box.innerHTML = `
     <div class="inst-dlg" role="dialog" aria-modal="true">
-      <header>Редактировать установку</header>
+      <header>${tr('im_edit_title')}</header>
       <div class="body">
         <div class="ni-row"><div class="ico">${esc((e.name || '?').trim().charAt(0).toUpperCase())}</div>
-          <div style="flex:1;min-width:0"><span class="cap">Название</span><input class="input" id="ieName" maxlength="40" value="${esc(e.name)}"></div></div>
+          <div style="flex:1;min-width:0"><span class="cap">${tr('ni_name_label')}</span><input class="input" id="ieName" maxlength="40" value="${esc(e.name)}"></div></div>
         <div class="ni-row" style="gap:10px;align-items:flex-start">
-          <div style="flex:1"><span class="cap">Версия Minecraft</span>
+          <div style="flex:1"><span class="cap">${tr('ni_version')}</span>
             <select class="input" id="ieVer">${list.map((v) => `<option value="${esc(v.id)}" ${v.id === e.version ? 'selected' : ''}>${esc(v.id)}</option>`).join('')}</select></div>
-          <div style="flex:1"><span class="cap">Тип игры</span>
+          <div style="flex:1"><span class="cap">${tr('ni_game_type')}</span>
             <select class="input" id="ieLoader">${NI_LOADERS.map(([k, l]) => `<option value="${k}" ${k === e.loader ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
         </div>
-        <div><span class="cap">Память: ${esc(ram)}</span>
+        <div><span class="cap">${tr('ie_memory')}: ${esc(ram)}</span>
           <div class="ni-ram" style="margin-top:6px">
-            <button class="chip ${e.ramGb ? '' : 'on'}" data-ie-ram="0">Глобально</button>
+            <button class="chip ${e.ramGb ? '' : 'on'}" data-ie-ram="0">${tr('ie_global')}</button>
             ${NI_RAM.map((n) => `<button class="chip ${e.ramGb === n ? 'on' : ''}" data-ie-ram="${n}">${n}G</button>`).join('')}
           </div>
           <input type="range" min="1" max="16" step="1" id="ieRamSlider" value="${e.ramGb || 4}" style="width:100%;margin-top:8px" ${e.ramGb ? '' : 'disabled'}>
         </div>
-        <div><span class="cap">Дополнительные аргументы JVM</span>
-          <input class="input" id="ieJvm" placeholder="Глобально (без аргументов)" value="${esc(e.jvmArgs)}">
-          <small class="muted">Пусто = использовать глобальные настройки</small></div>
-        <div><span class="cap">Путь к Java</span>
-          <input class="input" id="ieJava" placeholder="Глобально (автоопределение)" value="${esc(e.javaPath)}">
-          <small class="muted">Файл java.exe. Пусто = автоопределение</small></div>
+        <div><span class="cap">${tr('ie_jvm')}</span>
+          <input class="input" id="ieJvm" placeholder="${tr('ie_jvm_ph')}" value="${esc(e.jvmArgs)}">
+          <small class="muted">${tr('ie_hint_jvm')}</small></div>
+        <div><span class="cap">${tr('ie_java')}</span>
+          <input class="input" id="ieJava" placeholder="${tr('ie_java_ph')}" value="${esc(e.javaPath)}">
+          <small class="muted">${tr('ie_hint_java')}</small></div>
         ${INST().editErr ? `<div class="err">${esc(INST().editErr)}</div>` : ''}
       </div>
-      <footer><button class="btn" data-ie="cancel">Отмена</button><button class="btn primary" data-ie="save">Сохранить</button></footer>
+      <footer><button class="btn" data-ie="cancel">${tr('app_cancel')}</button><button class="btn primary" data-ie="save">${tr('save')}</button></footer>
     </div>`;
   box.onclick = (ev) => { if (ev.target === box) closeInstEdit(); };
   const sl = document.getElementById('ieRamSlider');
@@ -149,10 +149,10 @@ async function ieSave() {
   const e = INST().edit; if (!e) return;
   const patch = { name: e.name, version: e.version, loader: e.loader, ramGb: e.ramGb || null, jvmArgs: e.jvmArgs, javaPath: e.javaPath };
   const r = await safe(api.installs.update(e.id, patch));
-  if (!r || !r.ok) { INST().editErr = (r && r.error) || 'Не получилось сохранить'; paintInstEdit(); return; }
+  if (!r || !r.ok) { INST().editErr = trMsg(r && r.error) || tr('ie_save_fail'); paintInstEdit(); return; }
   closeInstEdit();
   await reloadInstalls();
-  toast('Установка сохранена');
+  toast(tr('ie_saved'));
   if (S.view === 'home') renderHome();
 }
 
@@ -170,14 +170,14 @@ async function handleInstallClick(e) {
       if (ui.confirm !== key) { ui.confirm = key; openInstMenu(document.querySelector(`[data-inst-menu="${CSS.escape(key)}"]`) || m, key); return true; }
       closeInstMenu();
       const r = x.kind === 'custom' ? await safe(api.installs.delete(x.id)) : await safe(api.packs.remove(x.slug));
-      if (!r || r.ok === false || r.error) return toast((r && r.error) || 'Не получилось удалить', true), true;
-      await reloadInstalls(); toast('Удалено'); renderHome(); return true;
+      if (!r || r.ok === false || r.error) return toast((r && r.error) || tr('im_delete_fail'), true), true;
+      await reloadInstalls(); toast(tr('app_deleted')); renderHome(); return true;
     }
     closeInstMenu();
     if (act === 'im-edit') { await openInstEdit(key); return true; }
     if (act === 'im-dup') {
       const r = await safe(api.installs.duplicate(x.id));
-      if (!r || !r.ok) toast((r && r.error) || 'Не получилось дублировать', true); else toast('Установка продублирована');
+      if (!r || !r.ok) toast((r && r.error) || tr('im_dup_fail'), true); else toast(tr('im_duplicated'));
       await reloadInstalls(); renderHome(); return true;
     }
     if (act === 'im-open') { const r = await safe(api.installs.open(key)); if (r && r.error) toast(r.error, true); return true; }

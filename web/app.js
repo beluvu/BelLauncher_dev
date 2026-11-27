@@ -29,9 +29,9 @@ const ICON = {
   min: SVG('<path d="M5 12h14"/>'), max: SVG('<rect x="5" y="5" width="14" height="14" rx="1.5"/>'), close: SVG('<path d="M6 6l12 12M18 6L6 18"/>'),
 };
 const VIEWS = [
-  ['home', 'Главная', 'home'], ['friends', 'Друзья', 'users'], ['news', 'Новости', 'info'], ['versions', 'Версия игры', 'versions'], ['packs', 'Модпаки', 'packs'],
-  ['mods', 'Моды', 'mods'], ['resourcepacks', 'Ресурспаки', 'res'], ['shaders', 'Шейдеры', 'shaders'],
-  ['skins', 'Скины', 'skins'], ['crystals', 'Кристаллики', 'coin'], ['settings', 'Настройки', 'settings'], ['about', 'О лаунчере', 'info'],
+  ['home', tr('nav_home'), 'home'], ['friends', tr('nav_friends'), 'users'], ['news', tr('nav_news'), 'info'], ['versions', tr('nav_versions'), 'versions'], ['packs', tr('nav_packs'), 'packs'],
+  ['mods', tr('nav_mods'), 'mods'], ['resourcepacks', tr('nav_resourcepacks'), 'res'], ['shaders', tr('nav_shaders'), 'shaders'],
+  ['skins', tr('nav_skins'), 'skins'], ['crystals', tr('nav_crystals'), 'coin'], ['settings', tr('nav_settings'), 'settings'], ['about', tr('nav_about'), 'info'],
 ];
 const TITLES = Object.fromEntries(VIEWS.map(([k, t]) => [k, t]));
 
@@ -49,7 +49,7 @@ function toast(msg, err = false) {
   const box = $('#toasts');
   const el = document.createElement('div');
   el.className = 'toast' + (err ? ' err' : '');
-  el.textContent = msg;
+  el.textContent = trMsg(msg);
   box.appendChild(el);
   setTimeout(() => el.remove(), err ? 5200 : 3000);
 }
@@ -97,7 +97,7 @@ function currentSub() {
   const a = activeInstall();
   const v = a ? a.version : S.st.version;
   const l = a ? a.loader : S.st.loader;
-  return `${v || '—'} · ${LOADER[l] || l || '—'}${a && a.kind === 'pack' ? ` · модов: ${a.mods}` : ''}`;
+  return `${v || '—'} · ${LOADER[l] || l || '—'}${a && a.kind === 'pack' ? ` · ${tr('app_mods_count')}: ${a.mods}` : ''}`;
 }
 
 /* ---------- оболочка ---------- */
@@ -108,13 +108,13 @@ async function checkUpdate() {
 }
 function paintUpdate() {
   const slot = $('#updSlot');
-  if (slot) slot.innerHTML = S.upd ? `<button class="btn primary upd-btn" data-act="upd-install" title="${esc(S.upd.notes || '')}">Обновить до ${esc(S.upd.latest)}</button>` : '';
+  if (slot) slot.innerHTML = S.upd ? `<button class="btn primary upd-btn" data-act="upd-install" title="${esc(S.upd.notes || '')}">${esc(tr('app_upd_btn', S.upd.latest))}</button>` : '';
 }
 async function installUpdate() {
   if (!S.upd) return;
-  toast('Загружаю обновление ' + S.upd.latest + '…');
+  toast(tr('app_upd_loading', S.upd.latest));
   const r = await api.update.install().catch(() => null);
-  if (!r || !r.ok) toast(r && r.error ? r.error : 'Не удалось установить обновление', true);
+  if (!r || !r.ok) toast(r && r.error ? r.error : tr('app_upd_fail'), true);
 }
 
 function shell() {
@@ -130,7 +130,7 @@ function shell() {
   $('#app').innerHTML = `
     <aside class="side">
       <div class="brand"><img src="${LOGO}" alt=""><div><b>Beluvu</b><small>Launcher</small></div></div>
-      <div class="profile" data-nav="skins" title="Скины">
+      <div class="profile" data-nav="skins" title="${tr('app_profile_title')}">
         <div class="head" id="head" style="background-image:url('${S.headUrl || ''}')"></div>
         <div><div class="nm">${esc(S.acc ? S.acc.nick : S.st.nick)}</div><div class="st">${S.social && S.acc ? tr('online') : tr('offline')}</div></div>
       </div>
@@ -193,9 +193,9 @@ function renderHome() {
   const busy = S.running || S.busyPlay;
   const cards = S.installs.map((x) => `
     <div class="panel inst ${x.active ? 'on' : ''}" data-select-install="${esc(x.key)}">
-      <button class="inst-more" data-inst-menu="${esc(x.key)}" title="Действия" aria-label="Действия">⋯</button>
+      <button class="inst-more" data-inst-menu="${esc(x.key)}" title="${tr('app_actions')}" aria-label="${tr('app_actions')}">⋯</button>
       <div class="row">${ico(x, 'sm')}<div style="min-width:0"><div class="t">${esc(x.title)}</div><div class="s">${esc(x.version)} · ${esc(LOADER[x.loader] || x.loader)}</div></div></div>
-      <div class="foot"><span>${x.kind === 'pack' ? 'Сборка' : 'Версия'} · модов: ${x.mods}</span>${x.active ? '<span class="badge ok">Выбрана</span>' : ''}</div>
+      <div class="foot"><span>${x.kind === 'pack' ? tr('app_pack') : tr('app_version')} · ${tr('app_mods_count')}: ${x.mods}</span>${x.active ? `<span class="badge ok">${tr('app_selected')}</span>` : ''}</div>
     </div>`).join('');
   content().innerHTML = `
     <div class="panel hero">
@@ -206,15 +206,15 @@ function renderHome() {
         <div class="sub">${esc(currentSub())}</div>
       </div>
       <div class="play">
-        <button class="btn primary play-btn" data-act="play" ${busy || !S.st.version ? 'disabled' : ''}>${ICON.play}<span>Играть</span></button>
+        <button class="btn primary play-btn" data-act="play" ${busy || !S.st.version ? 'disabled' : ''}>${ICON.play}<span>${tr('app_play')}</span></button>
         <div class="progress ${S.status && S.status.pct == null ? 'ind' : ''}" id="prog" style="display:${S.status ? 'block' : 'none'}"><i style="width:${S.status && S.status.pct != null ? Math.round(S.status.pct * 100) : 0}%"></i></div>
         <div class="status" id="stxt">${S.status ? esc(S.status.text) : ''}</div>
       </div>
     </div>
-    <div class="section-h"><h3>Ваши установки</h3><button class="btn small" data-nav="newinstall">${ICON.plus}<span>Новая установка</span></button></div>
-    <div class="grid">${cards || '<div class="empty" style="grid-column:1/-1">Установок пока нет. Выбери версию игры или сборку.</div>'}
-      <button class="newcard" data-nav="packs"><span>+ Сборка из каталога</span></button></div>
-    <p class="muted" style="margin-top:14px;font-size:12px">${a ? 'Папка игры: ' + esc(a.kind === 'pack' ? 'сборка' : 'версия') : ''}</p>`;
+    <div class="section-h"><h3>${tr('app_your_installs')}</h3><button class="btn small" data-nav="newinstall">${ICON.plus}<span>${tr('app_new_install')}</span></button></div>
+    <div class="grid">${cards || `<div class="empty" style="grid-column:1/-1">${tr('app_no_installs')}</div>`}
+      <button class="newcard" data-nav="packs"><span>${tr('app_pack_from_catalog')}</span></button></div>
+    <p class="muted" style="margin-top:14px;font-size:12px">${a ? tr('app_game_folder') + ': ' + esc(a.kind === 'pack' ? tr('app_pack_lc') : tr('app_version_lc')) : ''}</p>`;
 }
 function updateProgressDom() {
   const p = $('#prog'); if (!p) return;
@@ -232,26 +232,26 @@ function renderVersions() {
   const v = S.vers;
   content().innerHTML = `
     <div class="toolbar">
-      <div class="chips" role="group" aria-label="Загрузчик">${LOADERS.map((l) => `<button class="chip ${S.st.loader === l ? 'on' : ''}" data-loader="${l}">${LOADER[l]}</button>`).join('')}</div>
+      <div class="chips" role="group" aria-label="${tr('app_loader_aria')}">${LOADERS.map((l) => `<button class="chip ${S.st.loader === l ? 'on' : ''}" data-loader="${l}">${LOADER[l]}</button>`).join('')}</div>
       <span style="flex:1"></span>
-      <input class="input" style="max-width:240px" placeholder="Поиск версии, например 1.21" value="${esc(v.q)}" data-in="vq">
+      <input class="input" style="max-width:240px" placeholder="${tr('app_search_version')}" value="${esc(v.q)}" data-in="vq">
     </div>
     <div class="panel pad"><div id="vlist">${versionRows()}</div></div>
-    <p class="muted" style="font-size:12px;margin-top:10px">Выбранная версия и загрузчик создают папку игры. Моды ставятся в «Моды» или через «Модпаки».</p>`;
+    <p class="muted" style="font-size:12px;margin-top:10px">${tr('app_versions_hint')}</p>`;
 }
 function versionRows() {
   const v = S.vers;
-  if (v.loading) return '<div class="empty">Загружаю список версий…</div>';
+  if (v.loading) return `<div class="empty">${tr('app_loading_versions')}</div>`;
   if (v.error) return `<div class="empty err">${esc(v.error)}</div>`;
-  if (!v.list) return '<div class="empty">Нет данных</div>';
+  if (!v.list) return `<div class="empty">${tr('app_no_data')}</div>`;
   const q = v.q.trim().toLowerCase();
   const rows = v.list.filter((x) => !q || x.id.toLowerCase().includes(q)).slice(0, 120);
-  if (!rows.length) return '<div class="empty">Ничего не найдено</div>';
+  if (!rows.length) return `<div class="empty">${tr('app_nothing_found')}</div>`;
   return rows.map((x) => {
     const on = S.st.version === x.id;
     return `<div class="vrow ${on ? 'on' : ''}">
       <div><b>${esc(x.id)}</b> <span class="muted" style="font-size:12px;margin-left:8px">${esc((x.releaseTime || '').slice(0, 10))}</span></div>
-      <button class="btn small ${on ? '' : 'primary'}" data-pickver="${esc(x.id)}" ${on ? 'disabled' : ''}>${on ? 'Выбрана' : 'Выбрать'}</button>
+      <button class="btn small ${on ? '' : 'primary'}" data-pickver="${esc(x.id)}" ${on ? 'disabled' : ''}>${on ? tr('app_pick') : tr('app_pick_btn')}</button>
     </div>`;
   }).join('');
 }
@@ -261,7 +261,7 @@ async function loadVersions() {
   const r = await safe(api.versions());
   S.vers.loading = false;
   if (r && r.versions) { S.vers.list = r.versions; S.vers.latest = r.latest; }
-  else { S.vers.error = 'Не удалось загрузить список версий. Проверь интернет.'; }
+  else { S.vers.error = tr('app_versions_load_fail'); }
   if (S.view === 'versions') { const l = $('#vlist'); if (l) l.innerHTML = versionRows(); }
 }
 
@@ -269,15 +269,15 @@ async function loadVersions() {
 function renderPacks() {
   const p = S.pack;
   const tabs = `<div class="tabs">
-    <button class="${p.tab === 'find' ? 'on' : ''}" data-ptab="find">Найти</button>
-    <button class="${p.tab === 'mine' ? 'on' : ''}" data-ptab="mine">Мои сборки</button></div>`;
+    <button class="${p.tab === 'find' ? 'on' : ''}" data-ptab="find">${tr('pk_find')}</button>
+    <button class="${p.tab === 'mine' ? 'on' : ''}" data-ptab="mine">${tr('pk_mine')}</button></div>`;
   let body = '';
   if (p.tab === 'find') {
     body = `<div class="toolbar">
         <div class="chips" role="group">${srcChips()}</div>
-        <span class="muted" style="font-size:12px">Показаны сборки для ${esc(S.st.version || 'версии')} · ${esc(LOADER[S.st.loader] || '')}</span>
+        <span class="muted" style="font-size:12px">${tr('pk_shown_for')} ${esc(S.st.version || tr('app_version_lc'))} · ${esc(LOADER[S.st.loader] || '')}</span>
         <span style="flex:1"></span>
-        <input class="input" style="max-width:300px" placeholder="Поиск сборок" value="${esc(p.q)}" data-in="pq">
+        <input class="input" style="max-width:300px" placeholder="${tr('pk_search')}" value="${esc(p.q)}" data-in="pq">
       </div>
       <div id="presults">${packResults()}</div>`;
   } else {
@@ -290,9 +290,9 @@ function srcChips() {
 }
 function packResults() {
   const p = S.pack;
-  if (p.loading) return '<div class="empty">Ищу сборки…</div>';
+  if (p.loading) return `<div class="empty">${tr('pk_searching')}</div>`;
   if (p.error) return `<div class="empty err">${esc(p.error)}</div>`;
-  if (!p.items.length) return '<div class="empty">Ничего не найдено</div>';
+  if (!p.items.length) return `<div class="empty">${tr('app_nothing_found')}</div>`;
   return p.items.map((x) => {
     const b = p.busy[x.slug];
     const installed = S.installs.some((i) => i.kind === 'pack' && i.key === 'pack:' + x.slug);
@@ -301,29 +301,29 @@ function packResults() {
       <div style="min-width:0">
         <div style="font-weight:600">${esc(x.title)} <span class="muted" style="font-weight:400;font-size:12px">${esc(x.author || '')}</span></div>
         <div class="d">${esc(x.description || '')}</div>
-        <div class="m"><span class="tag">${fmtNum(x.downloads)} загрузок</span>${(x.mc ? `<span class="tag">${esc(x.mc)}</span>` : '')}</div>
+        <div class="m"><span class="tag">${tr('app_downloads', fmtNum(x.downloads))}</span>${(x.mc ? `<span class="tag">${esc(x.mc)}</span>` : '')}</div>
       </div>
       <div class="a">
-        ${b ? `<span class="muted" style="font-size:12px">${esc(b.text || 'Ставлю…')}</span><div class="bar"><i style="width:${Math.round((b.pct || 0) * 100)}%"></i></div>`
-          : `<button class="btn small primary" data-act="packinstall" data-idx="${esc(x.slug)}" ${installed ? 'disabled' : ''}>${installed ? 'Установлена' : 'Установить'}</button>`}
+        ${b ? `<span class="muted" style="font-size:12px">${esc(b.text || tr('app_installing'))}</span><div class="bar"><i style="width:${Math.round((b.pct || 0) * 100)}%"></i></div>`
+          : `<button class="btn small primary" data-act="packinstall" data-idx="${esc(x.slug)}" ${installed ? 'disabled' : ''}>${installed ? tr('pk_installed') : tr('app_install')}</button>`}
       </div></div>`;
   }).join('');
 }
 function packMine() {
   const packs = S.installs.filter((i) => i.kind === 'pack');
-  if (!packs.length) return '<div class="empty">Сборок пока нет. Найди и установи во вкладке «Найти».</div>';
+  if (!packs.length) return `<div class="empty">${tr('pk_none_yet')}</div>`;
   return packs.map((x) => {
     const busy = S.pack.busy[x.slug];
     return `<div class="proj">
       ${ico(x)}
       <div style="min-width:0"><div style="font-weight:600">${esc(x.title)}</div>
-        <div class="d">${esc(x.version)} · ${esc(LOADER[x.loader] || x.loader)} · модов: ${x.mods}</div></div>
+        <div class="d">${esc(x.version)} · ${esc(LOADER[x.loader] || x.loader)} · ${tr('app_mods_count')}: ${x.mods}</div></div>
       <div class="a" style="flex-direction:row;align-items:center">
-        ${x.active ? '<span class="badge ok">Выбрана</span>' : `<button class="btn small" data-select-install="${esc(x.key)}">Выбрать</button>`}
-        <button class="btn small" data-act="editpack" data-key="${esc(x.key)}">Изменить</button>
-        <button class="btn icon" data-act="packfolder" data-slug="${esc(x.slug)}" title="Папка сборки">${ICON.folder}</button>
-        <button class="btn icon" data-act="packupd" data-slug="${esc(x.slug)}" title="Проверить обновления">${ICON.refresh}</button>
-        <button class="btn icon danger" data-act="packdel" data-slug="${esc(x.slug)}" title="${S.pack.confirm === x.slug ? 'Нажми ещё раз, чтобы удалить' : 'Удалить сборку'}">${S.pack.confirm === x.slug ? '✓' : ICON.trash}</button>
+        ${x.active ? `<span class="badge ok">${tr('app_selected')}</span>` : `<button class="btn small" data-select-install="${esc(x.key)}">${tr('app_pick_btn')}</button>`}
+        <button class="btn small" data-act="editpack" data-key="${esc(x.key)}">${tr('app_edit')}</button>
+        <button class="btn icon" data-act="packfolder" data-slug="${esc(x.slug)}" title="${tr('pk_folder')}">${ICON.folder}</button>
+        <button class="btn icon" data-act="packupd" data-slug="${esc(x.slug)}" title="${tr('pk_check_updates')}">${ICON.refresh}</button>
+        <button class="btn icon danger" data-act="packdel" data-slug="${esc(x.slug)}" title="${S.pack.confirm === x.slug ? tr('pk_confirm_delete') : tr('pk_delete')}">${S.pack.confirm === x.slug ? '✓' : ICON.trash}</button>
       </div></div>${busy ? `<div class="muted" style="font-size:12px;margin:-4px 0 8px 12px">${esc(busy.text)}</div>` : ''}`;
   }).join('');
 }
@@ -335,7 +335,7 @@ async function searchPacks() {
   if (seq !== p.seq) return;
   p.loading = false;
   if (Array.isArray(r)) p.items = r;
-  else p.error = 'Не удалось связаться с каталогом Modrinth. Проверь интернет.';
+  else p.error = tr('net_catalog_modrinth');
   const el = $('#presults'); if (el) el.innerHTML = packResults();
 }
 async function loadMinePacks() { await reloadInstalls(); const el = $('#pmine'); if (el) el.innerHTML = packMine(); }
@@ -343,21 +343,21 @@ async function loadMinePacks() { await reloadInstalls(); const el = $('#pmine');
 /* ---------- моды / ресурспаки / шейдеры ---------- */
 function renderMods() {
   const m = S.mods;
-  const kindName = { mod: 'Моды', resource: 'Ресурспаки', resourcepack: 'Ресурспаки', shader: 'Шейдеры' }[S.mods.kind];
+  const kindName = { mod: tr('nav_mods'), resource: tr('nav_resourcepacks'), resourcepack: tr('nav_resourcepacks'), shader: tr('nav_shaders') }[S.mods.kind];
   const a = activeInstall();
-  const ph = { mod: 'Поиск модов', resourcepack: 'Поиск ресурспаков', shader: 'Поиск шейдеров' }[S.mods.kind];
+  const ph = { mod: tr('mod_search_mod'), resourcepack: tr('mod_search_res'), shader: tr('mod_search_shader') }[S.mods.kind];
   content().innerHTML = `
     <div class="split">
       <div class="col">
         <div class="panel pad">
-          <div class="kicker">Установка</div>
+          <div class="kicker">${tr('mod_install_kicker')}</div>
           <div style="margin-top:8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(currentTitle())}</div>
           <div class="muted" style="font-size:12px">${esc(currentSub())}</div>
-          <div class="muted" style="font-size:11px;margin-top:6px">${a && a.kind === 'pack' ? 'Изменения сохраняются в этой сборке' : 'Выбери сборку во вкладке «Модпаки», чтобы менять её моды'}</div>
+          <div class="muted" style="font-size:11px;margin-top:6px">${a && a.kind === 'pack' ? tr('mod_change_in_pack') : tr('mod_pick_pack')}</div>
         </div>
         <div class="panel pad" style="flex:1;min-height:0;display:flex;flex-direction:column">
-          <div class="kicker" id="instHead">${kindName} · установлено</div>
-          <input class="input" style="margin:10px 0" placeholder="Фильтр установленных" value="${esc(m.filter)}" data-in="mfilter">
+          <div class="kicker" id="instHead">${kindName} · ${tr('mod_installed_word')}</div>
+          <input class="input" style="margin:10px 0" placeholder="${tr('mod_filter')}" value="${esc(m.filter)}" data-in="mfilter">
           <div class="scroll" id="installed" style="max-height:none;flex:1">${installedRows()}</div>
         </div>
       </div>
@@ -374,23 +374,23 @@ function renderMods() {
 }
 function installedRows() {
   const m = S.mods;
-  if (m.installedLoading) return '<div class="empty">Загружаю…</div>';
+  if (m.installedLoading) return `<div class="empty">${tr('app_loading')}</div>`;
   const q = m.filter.trim().toLowerCase();
   const list = m.installed.filter((x) => !q || String(x.title || '').toLowerCase().includes(q));
-  if (!list.length) return '<div class="empty">Пусто</div>';
+  if (!list.length) return `<div class="empty">${tr('app_empty')}</div>`;
   return list.map((x) => {
     const isMod = S.mods.kind === 'mod';
     const toggle = isMod ? `<label class="switch"><input type="checkbox" data-toggle="${esc(x.id)}" ${x.enabled ? 'checked' : ''}><span></span></label>` : '';
-    const del = `<button class="btn icon danger" data-act="rmmod" data-id="${esc(x.id)}" title="Удалить">${S.mods.confirm === x.id ? '✓' : ICON.trash}</button>`;
+    const del = `<button class="btn icon danger" data-act="rmmod" data-id="${esc(x.id)}" title="${tr('app_delete')}">${S.mods.confirm === x.id ? '✓' : ICON.trash}</button>`;
     return `<div class="row-item ${x.enabled === false ? 'off' : ''}">${ico(x, 'xs')}
       <div class="meta"><div class="n">${esc(x.title)}</div><div class="f">${esc(x.file || '')}</div></div>${toggle}${del}</div>`;
   }).join('');
 }
 function resultRows() {
   const m = S.mods;
-  if (m.loading) return '<div class="empty">Ищу…</div>';
+  if (m.loading) return `<div class="empty">${tr('app_searching')}</div>`;
   if (m.error) return `<div class="empty err">${esc(m.error)}</div>`;
-  if (!m.items.length) return '<div class="empty">Ничего не найдено</div>';
+  if (!m.items.length) return `<div class="empty">${tr('app_nothing_found')}</div>`;
   const installedIds = new Set(m.installed.map((x) => x.id));
   return m.items.map((x) => {
     const done = installedIds.has(x.id) || installedIds.has(String(x.id));
@@ -398,8 +398,8 @@ function resultRows() {
     return `<div class="proj">${ico(x)}
       <div style="min-width:0"><div style="font-weight:600">${esc(x.title)} <span class="muted" style="font-weight:400;font-size:12px">${esc(x.author || '')}</span></div>
         <div class="d">${esc(x.description || '')}</div>
-        <div class="m"><span class="tag">${fmtNum(x.downloads)} загрузок</span>${x.mc ? `<span class="tag">${esc(x.mc)}</span>` : ''}</div></div>
-      <div class="a"><button class="btn small ${done ? '' : 'primary'}" data-act="minstall" data-id="${esc(x.id)}" ${done || busy ? 'disabled' : ''}>${done ? 'Установлен' : busy ? 'Ставлю…' : 'Установить'}</button></div></div>`;
+        <div class="m"><span class="tag">${tr('app_downloads', fmtNum(x.downloads))}</span>${x.mc ? `<span class="tag">${esc(x.mc)}</span>` : ''}</div></div>
+      <div class="a"><button class="btn small ${done ? '' : 'primary'}" data-act="minstall" data-id="${esc(x.id)}" ${done || busy ? 'disabled' : ''}>${done ? tr('mod_installed') : busy ? tr('app_installing') : tr('app_install')}</button></div></div>`;
   }).join('');
 }
 async function loadInstalled() {
@@ -416,7 +416,7 @@ async function loadInstalled() {
   }
   m.installed = list; m.installedLoading = false;
   const el = $('#installed'); if (el) el.innerHTML = installedRows();
-  const hd = $('#instHead'); if (hd) hd.textContent = `${{ mod: 'Моды', resourcepack: 'Ресурспаки', shader: 'Шейдеры' }[S.mods.kind]} · установлено: ${list.length}`;
+  const hd = $('#instHead'); if (hd) hd.textContent = `${{ mod: tr('nav_mods'), resourcepack: tr('nav_resourcepacks'), shader: tr('nav_shaders') }[S.mods.kind]} · ${tr('mod_installed_word')}: ${list.length}`;
   const rs = $('#results'); if (rs) rs.innerHTML = resultRows();
 }
 async function searchMods() {
@@ -425,7 +425,7 @@ async function searchMods() {
   const r = await safe(api.modrinth.search({ kind: S.mods.kind, query: m.q, source: m.source }));
   if (seq !== m.seq) return;
   m.loading = false;
-  if (Array.isArray(r)) m.items = r; else { m.items = []; m.error = 'Не удалось связаться с каталогом. Проверь интернет.'; }
+  if (Array.isArray(r)) m.items = r; else { m.items = []; m.error = tr('net_catalog'); }
   const rs = $('#results'); if (rs) rs.innerHTML = resultRows();
 }
 
@@ -528,7 +528,7 @@ const Skin3D = (() => {
       ctx.fillStyle = 'rgba(128,128,128,0.6)';
       ctx.font = `${Math.round(14 * (W / 280))}px sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText('Нет текстуры скина', W / 2, H / 2);
+      ctx.fillText(tr('skin_no_texture'), W / 2, H / 2);
       return;
     }
     const S = Math.min(W / 18, H / 36);                   // пикселей на единицу модели
@@ -624,16 +624,16 @@ async function renderSkins() {
     <div class="skins-layout">
       <div class="skins-main">
         <div class="toolbar">
-          <button class="btn primary" data-act="upskin">${ICON.plus}<span>Загрузить PNG 64×64</span></button>
-          <div class="field" style="flex:1;max-width:360px"><input class="input" placeholder="Ник для скина с mc-heads" data-in="snick"><button class="btn" data-act="dlskin">Скачать</button></div>
+          <button class="btn primary" data-act="upskin">${ICON.plus}<span>${tr('skin_upload')}</span></button>
+          <div class="field" style="flex:1;max-width:360px"><input class="input" placeholder="${tr('skin_nick_ph')}" data-in="snick"><button class="btn" data-act="dlskin">${tr('skin_download')}</button></div>
         </div>
         <div class="skins" id="skins"></div>
       </div>
       <aside class="skin-preview-panel panel">
-        <div class="skin-preview-title">3D превью</div>
+        <div class="skin-preview-title">${tr('skin_preview_3d')}</div>
         <div id="skinmodels" class="pill-row" style="justify-content:center;margin-bottom:8px"></div>
-        <canvas id="skin3d" class="skin3d" width="280" height="360" title="Тяни мышью, чтобы крутить"></canvas>
-        <div class="muted" style="font-size:12px;text-align:center;margin-top:8px">Тяни, чтобы вращать · автоповорот</div>
+        <canvas id="skin3d" class="skin3d" width="280" height="360" title="${tr('skin_drag_title')}"></canvas>
+        <div class="muted" style="font-size:12px;text-align:center;margin-top:8px">${tr('skin_drag_hint')}</div>
       </aside>
     </div>`;
   const cards = [{ id: null, type: 'steve', name: 'Steve' }, { id: null, type: 'alex', name: 'Alex' }]
@@ -648,13 +648,13 @@ async function renderSkins() {
       <img class="skin-img" src="${img}" alt="">
       <div style="font-weight:600">${esc(c.name)}</div>
       <div class="pill-row">
-        <button class="btn small ${on ? '' : 'primary'}" data-act="pickskin" data-stype="${c.type}" data-sid="${esc(c.id || '')}" ${on ? 'disabled' : ''}>${on ? 'Выбран' : 'Выбрать'}</button>
-        ${c.type === 'custom' ? `<button class="btn small danger" data-act="rmskin" data-sid="${esc(c.id)}">${S.skins.confirm === c.id ? 'Точно?' : 'Удалить'}</button>` : ''}
+        <button class="btn small ${on ? '' : 'primary'}" data-act="pickskin" data-stype="${c.type}" data-sid="${esc(c.id || '')}" ${on ? 'disabled' : ''}>${on ? tr('skin_selected') : tr('app_pick_btn')}</button>
+        ${c.type === 'custom' ? `<button class="btn small danger" data-act="rmskin" data-sid="${esc(c.id)}">${S.skins.confirm === c.id ? tr('skin_sure') : tr('app_delete')}</button>` : ''}
       </div></div>`;
   }));
   const box = $('#skins'); if (box) box.innerHTML = html.join('');
   const models = $('#skinmodels');
-  if (models) models.innerHTML = [['classic', 'Обычные руки (Steve)'], ['slim', 'Тонкие руки (Alex)']].map(([m, t]) =>
+  if (models) models.innerHTML = [['classic', tr('skin_classic')], ['slim', tr('skin_slim')]].map(([m, t]) =>
     `<button class="btn small ${(sk.model || 'classic') === m ? 'primary' : ''}" data-act="skinmodel" data-model="${m}">${t}</button>`).join('');
   const cv = $('#skin3d');
   if (cv) {
@@ -677,7 +677,7 @@ function renderSettings() {
       <div class="set-row"><div class="l"><b>${tr('set_nick')}</b><small>${tr('set_nick_sub')}</small></div>
         <div class="field" style="max-width:300px"><input class="input" value="${esc(s.nick)}" data-in="nick"><button class="btn" data-act="savenick">${tr('save')}</button></div></div>
       <div class="set-row"><div class="l"><b>${tr('set_ram')}</b><small>${tr('set_ram_sub', s.ramGb)}</small></div>
-        <div class="ram">${[2, 3, 4, 6, 8, 12].map((n) => `<button class="chip ${s.ramGb === n ? 'on' : ''}" data-ram="${n}">${n} ГБ</button>`).join('')}</div></div>
+        <div class="ram">${[2, 3, 4, 6, 8, 12].map((n) => `<button class="chip ${s.ramGb === n ? 'on' : ''}" data-ram="${n}">${n} ${tr('app_gb')}</button>`).join('')}</div></div>
     </div>
     <div class="panel">
       <div class="set-row"><div class="l"><b>${tr('set_gamedir')}</b><small>${tr('set_gamedir_sub')}</small></div><button class="btn" data-act="openfolder" data-what="game">${tr('open')}</button></div>
@@ -704,12 +704,12 @@ function renderAbout() {
 /* ---------- Кристаллики: валюта, магазин, кейсы, палитра ---------- */
 const COIN = '<img class="coin-ico" src="assets/coin.png" alt="">';
 const PALETTE_VARS = ['--blue', '--blue-2', '--accent-strong', '--grad-a', '--glow', '--sky-a', '--sky-b', '--sky-c'];
-const CTABS = [['shop', 'Магазин'], ['cases', 'Кейсы'], ['items', 'Мои предметы']];
+const ctabs = () => [['shop', tr('crys_shop')], ['cases', tr('crys_cases')], ['items', tr('crys_items')]];
 const themeById = (id) => (S.coins && S.coins.themes.find((t) => t.id === id)) || null;
 const playPct = (c) => Math.min(100, Math.round((100 * c.playSec) / c.playTarget));
 const playText = (c) => {
   const left = Math.max(0, c.playTarget - c.playSec);
-  return `Сегодня ${c.playToday} из ${c.playDayMax}. До вехи ${Math.floor(left / 3600)} ч ${Math.floor((left % 3600) / 60)} мин`;
+  return tr('crys_today', c.playToday, c.playDayMax, Math.floor(left / 3600), Math.floor((left % 3600) / 60));
 };
 
 // Палитра темы: цвета акцентов, неба и оттенок кристаллов на фоне (см. bg.js)
@@ -741,9 +741,9 @@ async function loadCoins() {
 // Ежедневная награда при открытии лаунчера: тихо, один раз в день
 async function dailyOnOpen() {
   const r = await safe(api.coins.daily());
-  if (r && r.ok) toast(`+${r.data.amount} кристалликов за вход в лаунчер`);
+  if (r && r.ok) toast(tr('crys_daily_toast', r.data.amount));
   const f = await safe(api.coins.rollFree());
-  if (f && f.ok && f.data.won) toast('Выпал бесплатный кейс, он во вкладке «Кристаллики»');
+  if (f && f.ok && f.data.won) toast(tr('crys_free_case'));
   await loadCoins();
   if (S.view === 'crystals') renderCrystals();
 }
@@ -751,7 +751,7 @@ async function dailyOnOpen() {
 function renderCrystals() {
   clearInterval(S.crys.timer);
   if (!S.coins) {
-    content().innerHTML = '<div class="panel" style="padding:24px"><span class="muted">Загрузка…</span></div>';
+    content().innerHTML = `<div class="panel" style="padding:24px"><span class="muted">${tr('crys_loading')}</span></div>`;
     loadCoins().then(() => { if (S.view === 'crystals') renderCrystals(); });
     return;
   }
@@ -760,26 +760,26 @@ function renderCrystals() {
     <div class="crys">
       <div class="crys-top">
         <div class="panel crys-card">
-          <div class="crys-label">Баланс</div>
+          <div class="crys-label">${tr('crys_balance')}</div>
           <div class="crys-num">${COIN}<span id="cbal">${fmtNum(c.balance)}</span></div>
         </div>
         <div class="panel crys-card">
-          <div class="crys-label">Ежедневная награда</div>
-          <div class="muted" style="font-size:12px">Каждый день при входе в лаунчер. Серия дней добавляет до +${c.streakMax}. Сейчас серия: ${c.streak}</div>
-          <button class="btn primary" id="cdaily" data-act="cdaily" ${c.dailyAvailable ? '' : 'disabled'}>${c.dailyAvailable ? 'Получить сейчас' : 'Получено сегодня'}</button>
+          <div class="crys-label">${tr('crys_daily')}</div>
+          <div class="muted" style="font-size:12px">${tr('crys_daily_sub', c.streakMax, c.streak)}</div>
+          <button class="btn primary" id="cdaily" data-act="cdaily" ${c.dailyAvailable ? '' : 'disabled'}>${c.dailyAvailable ? tr('crys_claim') : tr('crys_claimed')}</button>
         </div>
         <div class="panel crys-card">
-          <div class="crys-label">Игра в Minecraft</div>
-          <div class="muted" style="font-size:12px">+${c.playPerHour} за час игры, до ${c.playDayMax} в день. Вехи: 10 ч и 50 ч</div>
+          <div class="crys-label">${tr('crys_play')}</div>
+          <div class="muted" style="font-size:12px">${tr('crys_play_sub', c.playPerHour, c.playDayMax)}</div>
           <div class="progress"><i id="cplay" style="width:${playPct(c)}%"></i></div>
           <div class="muted" id="cplaytxt" style="font-size:12px">${playText(c)}</div>
         </div>
       </div>
       <div class="panel promo-row">
-        <input class="input" id="promo-in" maxlength="32" placeholder="Промокод" autocomplete="off">
-        <button class="btn primary" data-act="promo">Активировать</button>
+        <input class="input" id="promo-in" maxlength="32" placeholder="${tr('promo_placeholder')}" autocomplete="off">
+        <button class="btn primary" data-act="promo">${tr('promo_activate')}</button>
       </div>
-      <div class="ctabs">${CTABS.map(([k, l]) => `<button class="${S.crys.tab === k ? 'on' : ''}" data-act="ctab" data-tab="${k}">${l}</button>`).join('')}</div>
+      <div class="ctabs">${ctabs().map(([k, l]) => `<button class="${S.crys.tab === k ? 'on' : ''}" data-act="ctab" data-tab="${k}">${l}</button>`).join('')}</div>
       <div id="cbody"></div>
     </div>`;
   paintCrysBody();
@@ -801,7 +801,7 @@ function updateCrysTop() {
   const pl = $('#cplay'); if (pl) pl.style.width = playPct(c) + '%';
   const pt = $('#cplaytxt'); if (pt) pt.textContent = playText(c);
   const dl = $('#cdaily');
-  if (dl) { dl.disabled = !c.dailyAvailable; dl.textContent = c.dailyAvailable ? 'Получить сейчас' : 'Получено сегодня'; }
+  if (dl) { dl.disabled = !c.dailyAvailable; dl.textContent = c.dailyAvailable ? tr('crys_claim') : tr('crys_claimed'); }
   document.querySelectorAll('[data-act="copen"]').forEach((b) => {
     const free = b.dataset.id === 'free';
     b.disabled = S.crys.spinning || (free ? c.freeCases <= 0 : c.balance < Number(b.dataset.price));
@@ -826,22 +826,22 @@ function shopHtml(c) {
     const owned = c.owned.includes('theme:' + t.id);
     const on = c.equipped.theme === t.id;
     const btn = on
-      ? '<button class="btn small" data-act="cequip" data-kind="theme" data-id="">Снять тему</button>'
+      ? `<button class="btn small" data-act="cequip" data-kind="theme" data-id="">${tr('crys_unequip_theme')}</button>`
       : owned
-        ? `<button class="btn small primary" data-act="cequip" data-kind="theme" data-id="${esc(t.id)}">Применить</button>`
+        ? `<button class="btn small primary" data-act="cequip" data-kind="theme" data-id="${esc(t.id)}">${tr('crys_apply')}</button>`
         : `<button class="btn small primary" data-act="cbuy" data-id="${esc(t.id)}" data-price="${t.price}">${COIN} ${t.price}</button>`;
     return `<div class="panel tcard">
       <div class="swatch photo" style="--a:${t.accent};--b:${t.accent2};background-image:url('assets/themes/${esc(t.id)}.jpg')"></div>
       <b>${esc(t.name)}</b>
-      <div class="muted" style="font-size:12px">${on ? 'Выбрана' : owned ? 'Куплена' : 'Тема лаунчера и кристаллов'}</div>
+      <div class="muted" style="font-size:12px">${on ? tr('app_selected') : owned ? tr('crys_bought') : tr('crys_theme_sub')}</div>
       ${btn}
     </div>`;
   }).join('');
   return `<div class="cgrid">${cards}
     <div class="panel tcard soon">
       <div class="swatch anim"></div>
-      <b>Анимированные фоны</b>
-      <div class="muted" style="font-size:12px">Скоро</div>
+      <b>${tr('crys_animated')}</b>
+      <div class="muted" style="font-size:12px">${tr('crys_soon')}</div>
     </div>
   </div>`;
 }
@@ -852,17 +852,17 @@ function casesHtml(c) {
   const freeCard = `
     <div class="panel case free-case">
       <div class="case-img"><img src="${esc(f.image || '')}" alt="" data-hide-err></div>
-      <div class="case-name">${esc(f.name || 'Бесплатный')}</div>
+      <div class="case-name">${esc(f.name || tr('crys_free'))}</div>
       <div class="case-odds">${(f.odds || []).map((o) => `<div><span>${esc(o.label)}</span><b>${o.percent}%</b></div>`).join('')}</div>
-      <button class="btn primary" data-act="copen" data-id="free" data-price="0" ${hasFree && !S.crys.spinning ? '' : 'disabled'}>${hasFree ? 'Открыть бесплатный' : 'Нет бесплатного кейса'}</button>
-      <div class="muted" style="font-size:12px">${hasFree ? 'В очереди: ' + c.freeCases : 'Следующий бросок 50/50 примерно через ' + Math.ceil((c.freeIn || 0) / 3600) + ' ч'}</div>
+      <button class="btn primary" data-act="copen" data-id="free" data-price="0" ${hasFree && !S.crys.spinning ? '' : 'disabled'}>${hasFree ? tr('crys_open_free') : tr('crys_no_free')}</button>
+      <div class="muted" style="font-size:12px">${hasFree ? tr('crys_queued') + ': ' + c.freeCases : tr('crys_next_roll', Math.ceil((c.freeIn || 0) / 3600))}</div>
     </div>`;
   const cards = c.cases.map((k) => `
     <div class="panel case">
       <div class="case-img"><img src="${esc(k.image)}" alt="" data-hide-err></div>
       <div class="case-name">${esc(k.name)}</div>
       <div class="case-odds">${k.odds.map((o) => `<div><span>${esc(o.label)}</span><b>${o.percent}%</b></div>`).join('')}</div>
-      <button class="btn primary" data-act="copen" data-id="${esc(k.id)}" data-price="${k.price}" ${c.balance < k.price || S.crys.spinning ? 'disabled' : ''}>${COIN} Открыть · ${k.price}</button>
+      <button class="btn primary" data-act="copen" data-id="${esc(k.id)}" data-price="${k.price}" ${c.balance < k.price || S.crys.spinning ? 'disabled' : ''}>${COIN} ${tr('crys_open')} · ${k.price}</button>
     </div>`).join('');
   return `<div class="opener" id="reel" hidden></div><div class="cgrid cases">${freeCard}${cards}</div>`;
 }
@@ -873,7 +873,7 @@ function giftCardHtml(g) {
     <button class="panel tcard nft gift-card" data-act="fr-nft" data-id="${Number(g.id)}">
       <div class="gift-prev"><img class="nft-bg" src="assets/nft/${esc(g.bg)}.png" alt="" data-hide-err><img class="nft-fig" src="assets/nft/fig/${esc(g.family)}-v${Number(g.variant) || 1}.png" alt="" data-hide-err></div>
       <b>${esc(g.name)} #${Number(g.id)}</b>
-      <div class="muted" style="font-size:12px"><span class="badge ok">NFT</span> ${esc(g.bgName || '')} · ${fmtNum(g.value)} кр.</div>
+      <div class="muted" style="font-size:12px"><span class="badge ok">NFT</span> ${esc(g.bgName || '')} · ${fmtNum(g.value)} ${tr('crys_short_cr')}</div>
     </button>`;
 }
 function itemsHtml(c) {
@@ -882,55 +882,55 @@ function itemsHtml(c) {
   const nft = owned.filter((k) => k.nft).map((k) => `
     <div class="panel tcard nft">
       <div class="cape-prev" style="background-image:url('assets/cloak-previews/${esc(k.id)}.png')"></div>
-      <b>${esc(k.name)}</b><div class="muted" style="font-size:12px"><span class="badge ok">NFT</span> Плащ</div>
+      <b>${esc(k.name)}</b><div class="muted" style="font-size:12px"><span class="badge ok">NFT</span> ${tr('crys_kind_cloak')}</div>
       ${c.equipped.cloak === k.id
-        ? '<button class="btn small" data-act="cequip" data-kind="cloak" data-id="">Снять</button>'
-        : `<button class="btn small primary" data-act="cequip" data-kind="cloak" data-id="${esc(k.id)}">Надеть</button>`}
+        ? `<button class="btn small" data-act="cequip" data-kind="cloak" data-id="">${tr('crys_unequip_cloak')}</button>`
+        : `<button class="btn small primary" data-act="cequip" data-kind="cloak" data-id="${esc(k.id)}">${tr('crys_wear')}</button>`}
     </div>`);
   const themes = c.themes.filter((t) => c.owned.includes('theme:' + t.id)).map((t) => `
     <div class="panel tcard">
       <div class="swatch photo" style="--a:${t.accent};--b:${t.accent2};background-image:url('assets/themes/${esc(t.id)}.jpg')"></div>
-      <b>${esc(t.name)}</b><div class="muted" style="font-size:12px">Тема</div>
+      <b>${esc(t.name)}</b><div class="muted" style="font-size:12px">${tr('crys_kind_theme')}</div>
       ${c.equipped.theme === t.id
-        ? '<button class="btn small" data-act="cequip" data-kind="theme" data-id="">Снять</button>'
-        : `<button class="btn small primary" data-act="cequip" data-kind="theme" data-id="${esc(t.id)}">Применить</button>`}
+        ? `<button class="btn small" data-act="cequip" data-kind="theme" data-id="">${tr('crys_take_off')}</button>`
+        : `<button class="btn small primary" data-act="cequip" data-kind="theme" data-id="${esc(t.id)}">${tr('crys_apply')}</button>`}
     </div>`);
   const cloaks = owned.filter((k) => !k.nft).map((k) => `
     <div class="panel tcard">
       <div class="cape-prev" style="background-image:url('assets/cloak-previews/${esc(k.id)}.png')"></div>
-      <b>${esc(k.name)}</b><div class="muted" style="font-size:12px">Плащ</div>
+      <b>${esc(k.name)}</b><div class="muted" style="font-size:12px">${tr('crys_kind_cloak')}</div>
       ${c.equipped.cloak === k.id
-        ? '<button class="btn small" data-act="cequip" data-kind="cloak" data-id="">Снять</button>'
-        : `<button class="btn small primary" data-act="cequip" data-kind="cloak" data-id="${esc(k.id)}">Надеть</button>`}
+        ? `<button class="btn small" data-act="cequip" data-kind="cloak" data-id="">${tr('crys_unequip_cloak')}</button>`
+        : `<button class="btn small primary" data-act="cequip" data-kind="cloak" data-id="${esc(k.id)}">${tr('crys_wear')}</button>`}
     </div>`);
-  if (!collectCards.length && !nft.length && !themes.length && !cloaks.length) return '<div class="panel" style="padding:24px"><span class="muted">Пока пусто. Купи тему в магазине или открой кейс.</span></div>';
+  if (!collectCards.length && !nft.length && !themes.length && !cloaks.length) return `<div class="panel" style="padding:24px"><span class="muted">${tr('crys_empty')}</span></div>`;
   return `<div class="cgrid">${collectCards.join('')}${nft.join('')}${themes.join('')}${cloaks.join('')}</div>
-    <p class="muted" style="font-size:12px;margin-top:12px">Плащ виден только тебе: он ставится в игру лишь для твоего ника и только с Fabric/Quilt.</p>`;
+    <p class="muted" style="font-size:12px;margin-top:12px">${tr('crys_cloak_only')}</p>`;
 }
 
 async function crysAct(act, a) {
   if (!['ctab', 'cdaily', 'cbuy', 'cequip', 'copen', 'csell', 'promo'].includes(act)) return false;
   if (act === 'ctab') { S.crys.tab = a.dataset.tab; paintCrysBody(); return true; }
-  if (S.crys.spinning) { toast('Дождись конца открытия кейса', true); return true; }
+  if (S.crys.spinning) { toast(tr('crys_wait_case'), true); return true; }
   if (act === 'promo') {
     const inp = $('#promo-in');
     const r = await safe(api.promo.redeem(inp ? inp.value.trim() : ''));
-    if (!r || !r.ok) { toast(fail(r, 'Промокод не подошёл'), true); return true; }
+    if (!r || !r.ok) { toast(fail(r, tr('promo_bad')), true); return true; }
     if (inp) inp.value = '';
     toast(promoText(r.data));
     if (r.data.kind !== 'crystals') reloadState();
   } else if (act === 'cdaily') {
     const r = await safe(api.coins.daily());
-    if (!r || !r.ok) toast(fail(r, 'Не получилось'), true); else toast(`+${r.data.amount} кристалликов`);
+    if (!r || !r.ok) toast(fail(r, tr('err_failed')), true); else toast(tr('crys_plus_amount', r.data.amount));
   } else if (act === 'cbuy') {
     const r = await safe(api.coins.buyTheme(a.dataset.id));
-    if (!r || !r.ok) toast(fail(r, 'Не получилось'), true); else toast('Тема куплена');
+    if (!r || !r.ok) toast(fail(r, tr('err_failed')), true); else toast(tr('crys_theme_bought'));
   } else if (act === 'cequip') {
     const r = await safe(api.coins.equip(a.dataset.kind, a.dataset.id || ''));
-    if (!r || !r.ok) toast(fail(r, 'Не получилось'), true);
+    if (!r || !r.ok) toast(fail(r, tr('err_failed')), true);
   } else if (act === 'csell') {
     const r = await safe(api.coins.sellNft(a.dataset.id));
-    if (!r || !r.ok) toast(fail(r, 'Не получилось продать'), true); else toast(`Продано: +${r.data.price} кристалликов`);
+    if (!r || !r.ok) toast(fail(r, tr('crys_sell_fail')), true); else toast(tr('crys_sold', r.data.price));
   } else if (act === 'copen') {
     await openCase(a.dataset.id);
     return true;
@@ -951,7 +951,7 @@ function ritemHtml(it) {
 async function openCase(id) {
   if (S.crys.spinning) return;
   const r = await safe(api.coins.openCase(id));
-  if (!r || !r.ok) { toast(fail(r, 'Не получилось открыть кейс'), true); return; }
+  if (!r || !r.ok) { toast(fail(r, tr('crys_open_fail')), true); return; }
   const res = r.data;
   const opener = $('#reel');
   if (!opener) return;
@@ -968,7 +968,7 @@ async function openCase(id) {
       <img class="cs-open" src="${esc(cs.open || cs.image || '')}" alt="" data-hide-err>
       <div class="cs-glow"></div>
     </div>
-    <div class="reel-res" id="rres"><span class="muted">Открываем…</span></div>`;
+    <div class="reel-res" id="rres"><span class="muted">${tr('crys_opening')}</span></div>`;
   opener.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   updateCrysTop();
   const box = opener.querySelector('.reel-box');
@@ -990,8 +990,8 @@ async function openCase(id) {
     if (stage) { stage.classList.remove('spin'); stage.classList.add('opened'); }
     const rr = $('#rres');
     if (rr) {
-      rr.innerHTML = `Выпало: <b>${esc(res.item.name)}</b>` +
-        (res.duplicateRefund ? ` <span class="muted">· повтор, +${res.duplicateRefund} кристалликов</span>` : '');
+      rr.innerHTML = `${tr('crys_dropped')}: <b>${esc(res.item.name)}</b>` +
+        (res.duplicateRefund ? ` <span class="muted">· ${tr('crys_duplicate', res.duplicateRefund)}</span>` : '');
     }
     await loadCoins();
     updateCrysTop();
@@ -1007,10 +1007,10 @@ async function reloadInstalls() { S.installs = await api.installs.list().catch((
 function onEvent(ev) {
   if (!ev) return;
   if (ev.type === 'status') { S.status = { text: ev.text, pct: ev.pct }; if (S.view === 'home') updateProgressDom(); }
-  if (ev.type === 'started') { S.running = true; S.status = null; S.busyPlay = false; toast('Игра запущена'); if (S.view === 'home') renderHome(); }
+  if (ev.type === 'started') { S.running = true; S.status = null; S.busyPlay = false; toast(tr('play_started')); if (S.view === 'home') renderHome(); }
   if (ev.type === 'closed') {
     S.running = false; S.status = null;
-    toast(ev.code ? `Игра закрылась с кодом ${ev.code}. Лог: Настройки → Папка лаунчера` : 'Игра закрыта');
+    toast(ev.code ? tr('play_exit_code', ev.code) : tr('play_closed'));
     if (S.view === 'home') renderHome();
   }
   if (ev.type === 'pack' && ev.slug) {
@@ -1028,20 +1028,20 @@ async function selectInstall(key) {
 }
 async function installPack(slug) {
   const x = S.pack.items.find((i) => i.slug === slug); if (!x) return;
-  S.pack.busy[slug] = { text: 'Начинаю…', pct: null };
+  S.pack.busy[slug] = { text: tr('pk_starting'), pct: null };
   if (S.view === 'packs') { const el = $('#presults'); if (el) el.innerHTML = packResults(); }
   const r = await safe(api.packs.install({ id: x.id, slug: x.slug, title: x.title, icon: x.icon, source: S.pack.source }));
   if (r && r.warning) toast(r.warning, true);
   delete S.pack.busy[slug];
-  if (r && r.ok) { S.st = r.settings; toast(`Сборка «${r.info.title}» установлена и выбрана`); await reloadState(); shell(); go(S.view); }
-  else toast(fail(r, 'Не удалось установить сборку'), true);
+  if (r && r.ok) { S.st = r.settings; toast(tr('pk_installed_selected', r.info.title)); await reloadState(); shell(); go(S.view); }
+  else toast(fail(r, tr('pk_install_fail')), true);
 }
 async function installMod(id) {
   const x = S.mods.items.find((i) => i.id === id); if (!x) return;
   S.mods.busy = id; const rs = $('#results'); if (rs) rs.innerHTML = resultRows();
   const r = await safe(api.modrinth.install({ id: x.id, slug: x.slug, kind: S.mods.kind, title: x.title, icon: x.icon, source: S.mods.source }));
   S.mods.busy = null;
-  if (r && r.ok) toast(`Установлено: ${x.title}`); else toast(fail(r, 'Не удалось установить'), true);
+  if (r && r.ok) toast(tr('mod_installed_msg', x.title)); else toast(fail(r, tr('mod_install_fail')), true);
   await loadInstalled();
   await reloadInstalls();
 }
@@ -1067,7 +1067,7 @@ document.addEventListener('click', async (e) => {
   if (pv) {
     const r = await safe(api.state.set({ version: pv.dataset.pickver, selectedModpack: null }));
     if (r && r.error) return toast(r.error, true);
-    S.st = r; await reloadInstalls(); await loadHead(); shell(); go('versions'); toast(`Выбрана версия ${pv.dataset.pickver}`); return;
+    S.st = r; await reloadInstalls(); await loadHead(); shell(); go('versions'); toast(tr('ver_selected', pv.dataset.pickver)); return;
   }
   const pt = t.closest('[data-ptab]');
   if (pt) { S.pack.tab = pt.dataset.ptab; renderPacks(); if (S.pack.tab === 'find') searchPacks(); else loadMinePacks(); setNav(); return; }
@@ -1103,7 +1103,7 @@ document.addEventListener('click', async (e) => {
   if (tg) {
     const enabled = tg.checked;
     const r = await safe(api.modrinth.setEnabled({ id: tg.dataset.toggle, enabled }));
-    if (!(r && r.ok)) { toast(fail(r, 'Не удалось переключить'), true); tg.checked = !enabled; }
+    if (!(r && r.ok)) { toast(fail(r, tr('mod_toggle_fail')), true); tg.checked = !enabled; }
     else { const m = S.mods.installed.find((x) => x.id === tg.dataset.toggle); if (m) m.enabled = enabled; const el = $('#installed'); if (el) el.innerHTML = installedRows(); }
     return;
   }
@@ -1115,7 +1115,7 @@ document.addEventListener('click', async (e) => {
     S.busyPlay = true; renderHome();
     const r = await safe(api.play());
     S.busyPlay = false;
-    if (!(r && r.ok)) { S.status = null; toast(fail(r, 'Не удалось запустить'), true); renderHome(); }
+    if (!(r && r.ok)) { S.status = null; toast(fail(r, tr('play_fail')), true); renderHome(); }
     return;
   }
   if (act === 'packinstall') return installPack(a.dataset.idx);
@@ -1125,13 +1125,13 @@ document.addEventListener('click', async (e) => {
     const slug = a.dataset.slug; const x = S.installs.find((i) => i.kind === 'pack' && i.key === 'pack:' + slug);
     const meta = x || {};
     const r = await safe(api.packs.checkUpdate({ id: meta.id || '', slug }));
-    if (!(r && r.ok)) return toast(fail(r, 'Не удалось проверить'), true);
-    if (!r.available) return toast('У сборки уже последняя версия');
-    S.pack.busy[slug] = { text: 'Обновляю…', pct: null }; renderPacks();
+    if (!(r && r.ok)) return toast(fail(r, tr('pk_check_fail')), true);
+    if (!r.available) return toast(tr('pk_latest'));
+    S.pack.busy[slug] = { text: tr('pk_updating'), pct: null }; renderPacks();
     const u = await safe(api.packs.update({ id: meta.id || '', slug, title: meta.title, icon: meta.icon, source: 'modrinth' }));
     delete S.pack.busy[slug];
-    if (u && u.ok) { S.st = u.settings; toast('Сборка обновлена'); await reloadState(); shell(); go('packs'); }
-    else toast(fail(u, 'Не удалось обновить'), true);
+    if (u && u.ok) { S.st = u.settings; toast(tr('pk_updated')); await reloadState(); shell(); go('packs'); }
+    else toast(fail(u, tr('pk_update_fail')), true);
     return;
   }
   if (act === 'packdel') {
@@ -1139,8 +1139,8 @@ document.addEventListener('click', async (e) => {
     if (S.pack.confirm !== slug) { S.pack.confirm = slug; renderPacks(); setTimeout(() => { if (S.pack.confirm === slug) { S.pack.confirm = null; if (S.view === 'packs') renderPacks(); } }, 3500); return; }
     S.pack.confirm = null;
     const r = await safe(api.packs.remove(slug));
-    if (r && r.ok) { S.st = r.settings; toast('Сборка удалена'); await reloadState(); shell(); go('packs'); }
-    else toast(fail(r, 'Не удалось удалить'), true);
+    if (r && r.ok) { S.st = r.settings; toast(tr('pk_deleted')); await reloadState(); shell(); go('packs'); }
+    else toast(fail(r, tr('pk_delete_fail')), true);
     return;
   }
   if (act === 'minstall') return installMod(a.dataset.id);
@@ -1149,27 +1149,27 @@ document.addEventListener('click', async (e) => {
     if (S.mods.confirm !== id) { S.mods.confirm = id; const el = $('#installed'); if (el) el.innerHTML = installedRows(); setTimeout(() => { if (S.mods.confirm === id) { S.mods.confirm = null; const e2 = $('#installed'); if (e2) e2.innerHTML = installedRows(); } }, 3500); return; }
     S.mods.confirm = null;
     const r = await safe(api.modrinth.remove({ id }));
-    if (r && r.error) toast(r.error, true); else toast('Удалено');
+    if (r && r.error) toast(r.error, true); else toast(tr('app_deleted'));
     await loadInstalled(); await reloadInstalls(); return;
   }
   if (act === 'savenick') {
     const v = $('[data-in="nick"]').value.trim();
     const r = await safe(api.state.set({ nick: v }));
     if (r && r.error) return toast(r.error, true);
-    S.st = r; toast('Ник сохранён'); shell(); setNav(); renderSettings(); return;
+    S.st = r; toast(tr('nick_saved')); shell(); setNav(); renderSettings(); return;
   }
   if (act === 'openfolder') { await safe(api.openFolder(a.dataset.what)); return; }
   if (act === 'logs-refresh' || act === 'logs-all' || act === 'logs-copy') { await logsAct(act); return; }
   if (act === 'upskin') {
     const r = await safe(api.skins.upload());
     if (!r) return;
-    if (r.ok) { S.st = r.settings; toast('Скин загружен'); renderSkins(); } else toast(fail(r, 'Не удалось загрузить'), true);
+    if (r.ok) { S.st = r.settings; toast(tr('skin_uploaded')); renderSkins(); } else toast(fail(r, tr('skin_upload_fail')), true);
     return;
   }
   if (act === 'dlskin') {
     const nick = $('[data-in="snick"]').value.trim();
     const r = await safe(api.skins.download(nick));
-    if (r && r.ok) { S.st = r.settings; toast('Скин скачан'); renderSkins(); } else toast(fail(r, 'Не удалось скачать'), true);
+    if (r && r.ok) { S.st = r.settings; toast(tr('skin_downloaded')); renderSkins(); } else toast(fail(r, tr('skin_download_fail')), true);
     return;
   }
   if (act === 'skinmodel') {
@@ -1244,7 +1244,7 @@ async function boot() {
     const timeout = new Promise((res) => setTimeout(() => res('timeout'), 15000));
     const raced = await Promise.race([stateP.then(() => 'ok'), timeout]);
     if (raced === 'timeout') {
-      document.getElementById('app').innerHTML = '<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>Долгая загрузка</h2><p>Python API не ответил за 15 с. Закрой лаунчер в Диспетчере задач и запусти снова. Лог: %APPDATA%\\BeluvuLauncher\\logs\\startup.log</p></div>';
+      document.getElementById('app').innerHTML = `<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>${tr('boot_slow_title')}</h2><p>${tr('boot_slow_text')}</p></div>`;
       return;
     }
     if (!S.st) S.st = { nick: 'Player', theme: 'light', version: null, loader: 'fabric' };
@@ -1256,7 +1256,7 @@ async function boot() {
     loadVersions();
     startDmWatch();
   } catch (e) {
-    document.getElementById('app').innerHTML = '<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>Ошибка запуска</h2><p>' + String(e && e.message || e) + '</p></div>';
+    document.getElementById('app').innerHTML = '<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>' + tr('boot_error_title') + '</h2><p>' + String(e && e.message || e) + '</p></div>';
   }
 }
 window.addEventListener('pywebviewready', boot);
@@ -1267,7 +1267,7 @@ setTimeout(() => {
   if (!booted) {
     const app = document.getElementById('app');
     if (app && !app.innerHTML.trim()) {
-      app.innerHTML = '<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>Интерфейс не поднялся</h2><p>Окно открылось, но не получило связь с Python-частью лаунчера. Закрой Beluvu Launcher в Диспетчере задач и запусти снова. Если повторяется, пришли файл %APPDATA%\\BeluvuLauncher\\logs\\startup.log.</p></div>';
+      app.innerHTML = `<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>${tr('boot_stuck_title')}</h2><p>${tr('boot_stuck_text')}</p></div>`;
     }
   }
 }, 5000);
