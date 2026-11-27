@@ -187,7 +187,7 @@ function paintPlayers() {
   const q = FR.q.trim().toLowerCase();
   const list = q ? FR.players.filter((p) => p.nick.toLowerCase().includes(q)) : FR.players;
   box.innerHTML = list.map((p) => `<button class="fr-row ${FR.peer === p.nick ? 'on' : ''} ${p.me ? 'me' : ''}" data-act="fr-peer" data-nick="${esc(p.nick)}">
-      <span class="av">${avatarInner(p.avatar, p.nick)}<i class="dot ${p.online ? 'on' : ''}"></i></span><span>${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}${p.me ? ' <small class="muted">(ты)</small>' : ''}${p.where ? `<small class="muted" style="display:block">${esc(p.where)}</small>` : ''}</span></button>`).join('')
+      <span class="av">${avatarInner(p.avatar, p.nick)}<i class="dot ${p.online ? 'on' : ''}"></i></span><span>${unreadDot(p.nick)}${nickHtml(p.nick, p.prefix, p.prefixColor, p.badges)}${p.me ? ' <small class="muted">(ты)</small>' : ''}${p.where ? `<small class="muted" style="display:block">${esc(p.where)}</small>` : ''}</span></button>`).join('')
     || `<div class="empty">${q ? tr('fr_notfound') : tr('fr_nobody')}</div>`;
 }
 function paintTab() {
@@ -443,6 +443,7 @@ async function pollDm(first) {
   }
 }
 function openPeer(nick) {
+  markPeerRead(nick);
   if (FR.peer !== nick) { FR.peer = nick; FR.dm = []; FR.dmLast = 0; FR.dmSeen = new Set(); }
   FR.tab = 'dm';
   paintPlayers();

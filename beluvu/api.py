@@ -10,7 +10,7 @@ import sys
 import threading
 import time
 
-from . import coins, helper, installs, instance, launch, modrinth, paths, settings, skins, social, support_build, uninstall, update, versions
+from . import coins, helper, installs, instance, launch, modrinth, paths, promo, settings, skins, social, support_build, uninstall, update, versions
 from .config import APP_VERSION, SOCIAL_ENABLED
 from .util import rm_rf
 
@@ -225,6 +225,21 @@ class Api:
 
     def social_news(self):
         return self._social(social.news)
+
+    def social_dm_unread(self):
+        return self._social(promo.unread)
+
+    def social_dm_mark_read(self, a=None):
+        return self._social(promo.mark_read, (a or {}).get('peer'))
+
+    def promo_redeem(self, a=None):
+        return self._social(promo.redeem, (a or {}).get('code'))
+
+    def logs_list(self):
+        return self._social(promo.logs_list)
+
+    def logs_read(self, a=None):
+        return self._social(promo.logs_read, (a or {}).get('name'))
 
     def helper_state(self):
         return self._social(helper.state)

@@ -689,7 +689,8 @@ function renderSettings() {
           <label class="check-row"><input type="checkbox" data-act="uninst-games" ${S.uninst && S.uninst.games ? 'checked' : ''}> ${tr('uninstall_games')}</label>
           <button class="btn danger" data-act="uninst">${S.uninst && S.uninst.confirm ? tr('uninstall_confirm') : tr('uninstall')}</button>
         </div></div>
-    </div>`;
+    </div>${logsPanelHtml()}`;
+  loadLogs();
 }
 function renderAbout() {
   content().innerHTML = `<div class="panel" style="padding:30px;display:flex;gap:26px;align-items:center">
@@ -773,6 +774,10 @@ function renderCrystals() {
           <div class="progress"><i id="cplay" style="width:${playPct(c)}%"></i></div>
           <div class="muted" id="cplaytxt" style="font-size:12px">${playText(c)}</div>
         </div>
+      </div>
+      <div class="panel promo-row">
+        <input class="input" id="promo-in" maxlength="32" placeholder="Промокод" autocomplete="off">
+        <button class="btn primary" data-act="promo">Активировать</button>
       </div>
       <div class="ctabs">${CTABS.map(([k, l]) => `<button class="${S.crys.tab === k ? 'on' : ''}" data-act="ctab" data-tab="${k}">${l}</button>`).join('')}</div>
       <div id="cbody"></div>
@@ -904,10 +909,17 @@ function itemsHtml(c) {
 }
 
 async function crysAct(act, a) {
-  if (!['ctab', 'cdaily', 'cbuy', 'cequip', 'copen', 'csell'].includes(act)) return false;
+  if (!['ctab', 'cdaily', 'cbuy', 'cequip', 'copen', 'csell', 'promo'].includes(act)) return false;
   if (act === 'ctab') { S.crys.tab = a.dataset.tab; paintCrysBody(); return true; }
   if (S.crys.spinning) { toast('Дождись конца открытия кейса', true); return true; }
-  if (act === 'cdaily') {
+  if (act === 'promo') {
+    const inp = $('#promo-in');
+    const r = await safe(api.promo.redeem(inp ? inp.value.trim() : ''));
+    if (!r || !r.ok) { toast(fail(r, 'Промокод не подошёл'), true); return true; }
+    if (inp) inp.value = '';
+    toast(promoText(r.data));
+    if (r.data.kind !== 'crystals') reloadState();
+  } else if (act === 'cdaily') {
     const r = await safe(api.coins.daily());
     if (!r || !r.ok) toast(fail(r, 'Не получилось'), true); else toast(`+${r.data.amount} кристалликов`);
   } else if (act === 'cbuy') {
@@ -1147,6 +1159,7 @@ document.addEventListener('click', async (e) => {
     S.st = r; toast('Ник сохранён'); shell(); setNav(); renderSettings(); return;
   }
   if (act === 'openfolder') { await safe(api.openFolder(a.dataset.what)); return; }
+  if (act === 'logs-refresh' || act === 'logs-all' || act === 'logs-copy') { await logsAct(act); return; }
   if (act === 'upskin') {
     const r = await safe(api.skins.upload());
     if (!r) return;
@@ -1241,6 +1254,7 @@ async function boot() {
     go('home');
     loadHead();
     loadVersions();
+    startDmWatch();
   } catch (e) {
     document.getElementById('app').innerHTML = '<div style="padding:40px;color:#fff;font-family:sans-serif"><h2>Ошибка запуска</h2><p>' + String(e && e.message || e) + '</p></div>';
   }

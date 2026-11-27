@@ -69,6 +69,8 @@ window.addEventListener('unhandledrejection', (e) => { try { window.__errs.push(
       nftInfo: (id) => call('social_nft_info', { id }),
       nftSend: (id, to) => call('social_nft_send', { id, to }),
       news: () => call('social_news'),
+      dmUnread: () => call('social_dm_unread'),
+      dmMarkRead: (peer) => call('social_dm_mark_read', { peer }),
       openLink: (url) => call('open_link', url)
     },
     helper: {
@@ -87,6 +89,8 @@ window.addEventListener('unhandledrejection', (e) => { try { window.__errs.push(
       sellNft: (id) => call('coins_sell_nft', id),
       equip: (kind, id) => call('coins_equip', kind, id)
     },
+    promo: { redeem: (code) => call('promo_redeem', { code }) },
+    logs: { list: () => call('logs_list'), read: (name) => call('logs_read', { name }) },
     openFolder: (what) => call('app_open_folder', what),
     uninstall: (removeGames) => call('app_uninstall', { removeGames }),
     win: { min: () => call('win_min'), max: () => call('win_max'), close: () => call('win_close') },
