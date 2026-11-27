@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Beluvu · Админка</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- экран входа -->
+  <main id="login" class="login" hidden>
+    <form class="login-card" id="loginForm" autocomplete="off">
+      <div class="login-brand">
+        <div class="logo">B</div>
+        <div><b>Beluvu</b><small>Админка</small></div>
+      </div>
+      <label class="field">
+        <span>Ключ входа</span>
+        <input id="loginKey" type="password" placeholder="Одноразовый ключ из базы" required>
+      </label>
+      <button class="btn primary block" type="submit">Войти</button>
+      <details class="login-alt">
+        <summary>У меня уже есть токен сессии</summary>
+        <label class="field">
+          <span>Токен сессии</span>
+          <input id="loginToken" type="password" placeholder="Вставь токен">
+        </label>
+        <button class="btn block" type="button" id="loginTokenBtn">Войти по токену</button>
+      </details>
+      <p class="form-error" id="loginErr" role="alert"></p>
+    </form>
+  </main>
+
+  <!-- оболочка приложения -->
+  <div class="app" id="app" hidden>
+    <aside class="side">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div><b>Beluvu</b><small>Админка</small></div>
+      </div>
+      <nav class="nav" id="nav">
+        <button data-sec="players">Игроки</button>
+        <button data-sec="promo">Промокоды</button>
+        <button data-sec="news">Новости</button>
+        <button data-sec="releases">Релизы</button>
+        <button data-sec="chat">Чат</button>
+        <button data-sec="support">Поддержка</button>
+        <button data-sec="catalog">Каталог и NFT</button>
+        <button data-sec="log">Журнал действий</button>
+      </nav>
+      <button class="btn ghost block" id="logoutBtn">Выйти</button>
+    </aside>
+    <section class="main">
+      <header class="topbar">
+        <h1 id="secTitle"></h1>
+        <div class="topbar-actions" id="secActions"></div>
+      </header>
+      <div id="view" class="view"></div>
+    </section>
+  </div>
+
+  <div id="modal"></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
